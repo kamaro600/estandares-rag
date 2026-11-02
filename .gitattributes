@@ -1,0 +1,21 @@
+# Binarios: Git nunca debe convertir sus saltos de línea (un PDF modificado así queda dañado).
+*.pdf binary
+*.png binary
+*.npz binary
+*.db binary
+
+# Archivos que leen Docker (Linux), Python o las pruebas: siempre LF, aunque Git en Windows use CRLF.
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+*.ini text eol=lf
+*.txt text eol=lf
+*.cs text eol=lf
+*.ts text eol=lf
+*.sql text eol=lf
+.env.example text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
