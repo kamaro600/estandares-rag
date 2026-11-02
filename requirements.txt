@@ -1,0 +1,10 @@
+fastapi>=0.115,<1
+uvicorn>=0.30
+anthropic>=2.3          # LLM (Claude)
+openai>=1.66            # embeddings (y LLM alternativo)
+numpy>=1.26
+pypdf>=5.0
+prometheus_client>=0.20
+pydantic>=2.7,<3
+python-dotenv>=1.0
+reportlab>=4.0          # solo para regenerar los PDFs de prueba (fuentes/generar_pdfs.py)

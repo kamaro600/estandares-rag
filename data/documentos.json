@@ -1,0 +1,54 @@
+{
+  "documentos": [
+    {
+      "codigo": "EST-SEG-001",
+      "titulo": "Estándar de Desarrollo Seguro",
+      "version": "2.1",
+      "fecha": "2026-03-10",
+      "categoria": "seguridad",
+      "archivo": "EST-SEG-001_desarrollo_seguro.pdf",
+      "vigente": true,
+      "patron_regla": "^(\\d+\\.\\d+) ([A-Z]{3}-[A-Z0-9]+-[A-Z0-9]+) · (.+)$"
+    },
+    {
+      "codigo": "EST-REF-001",
+      "titulo": "Marco de Referencia de Estándares Externos",
+      "version": "1.3",
+      "fecha": "2026-03-10",
+      "categoria": "referencia",
+      "archivo": "EST-REF-001_marco_referencia_owasp.pdf",
+      "vigente": true,
+      "patron_regla": "^(\\d+\\.\\d+) ([A-Z]{3}-[A-Z0-9]+-[A-Z0-9]+) · (.+)$"
+    },
+    {
+      "codigo": "EST-WEB-001",
+      "titulo": "Estándar de Desarrollo de Aplicaciones Web",
+      "version": "3.0",
+      "fecha": "2026-02-02",
+      "categoria": "web",
+      "archivo": "EST-WEB-001_desarrollo_web.pdf",
+      "vigente": true,
+      "patron_regla": "^(\\d+\\.\\d+) ([A-Z]{3}-[A-Z0-9]+-[A-Z0-9]+) · (.+)$"
+    },
+    {
+      "codigo": "EST-API-001",
+      "titulo": "Estándar de Diseño y Desarrollo de APIs",
+      "version": "2.0",
+      "fecha": "2026-01-19",
+      "categoria": "api",
+      "archivo": "EST-API-001_desarrollo_apis.pdf",
+      "vigente": true,
+      "patron_regla": "^(\\d+\\.\\d+) ([A-Z]{3}-[A-Z0-9]+-[A-Z0-9]+) · (.+)$"
+    },
+    {
+      "codigo": "EST-DSK-001",
+      "titulo": "Estándar de Desarrollo de Aplicaciones de Escritorio .NET",
+      "version": "1.4",
+      "fecha": "2023-08-14",
+      "categoria": "escritorio",
+      "archivo": "EST-DSK-001_desarrollo_escritorio_net.pdf",
+      "vigente": true,
+      "patron_regla": "^(\\d+\\.\\d+) ([A-Z]{3}-[A-Z0-9]+-[A-Z0-9]+) · (.+)$"
+    }
+  ]
+}

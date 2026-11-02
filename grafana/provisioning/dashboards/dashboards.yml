@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: estandares
+    folder: Estándares
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

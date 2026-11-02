@@ -1,0 +1,24 @@
+# Alertas operativas recomendadas en el informe final (sección 6.2, punto 5).
+groups:
+  - name: estandares
+    rules:
+      - alert: RouterUsaMuchoRespaldo
+        expr: sum(increase(est_router_respaldo_total{motivo=~"bajo_umbral|error"}[30m])) / clamp_min(sum(increase(est_chat_mensajes_total[30m])), 1) > 0.5
+        for: 15m
+        annotations: {summary: "Más de la mitad de los mensajes los decide el respaldo: revisar umbral o ejemplos de rutas"}
+      - alert: CitasInvalidas
+        expr: sum(increase(est_citas_invalidas_total[1h])) > 5
+        annotations: {summary: "El LLM cita reglas que no recibió (posible alucinación o cambio de modelo)"}
+      - alert: ColaDeRevisionCrece
+        expr: est_reportes_pendientes > 20
+        for: 1h
+        annotations: {summary: "Hay más de 20 reportes sin revisión humana"}
+      - alert: CostoPorHora
+        expr: sum(increase(est_costo_estimado_usd_total[1h])) > 5
+        annotations: {summary: "El costo estimado de IA supera 5 USD por hora"}
+      - alert: ErroresProveedorIA
+        expr: sum(increase(est_api_errores_total[15m])) > 10
+        annotations: {summary: "Errores frecuentes con Claude u OpenAI: el chat está degradado"}
+      - alert: IntentosDeInyeccion
+        expr: sum(increase(est_inyeccion_total[1h])) > 10
+        annotations: {summary: "Muchos intentos de prompt injection en la última hora"}
