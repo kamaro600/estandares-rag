@@ -1,0 +1,10 @@
+@model ComentariosViewModel
+<h2>Comentarios</h2>
+@foreach (var c in Model.Comentarios)
+{
+    <div class="comentario">@Html.Raw(c.Texto)</div>
+}
+<button onclick="enviar()">Enviar</button>
+<script>
+    function enviar() { document.forms[0].submit(); }
+</script>

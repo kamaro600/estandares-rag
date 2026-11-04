@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="TituloVentana" xml:space="preserve">
+    <value>Clientes</value>
+  </data>
+  <data name="ApiKeyServicio" xml:space="preserve">
+    <value>a1b2c3d4e5f6</value>
+  </data>
+  <add key="ConexionReportes" value="Server=srv01;Database=Reportes;User Id=sa;Password=Clave123;Encrypt=False" />
+</root>
