@@ -1,0 +1,578 @@
+[
+ {
+  "id": "EST-API-001-S01",
+  "titulo": "Objetivo",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-API-001",
+  "version": "2.0",
+  "fecha": "2026-01-19",
+  "seccion": "1",
+  "pagina": 3,
+  "texto": "Asegurar que las APIs de la empresa sean consistentes, seguras, documentadas y fáciles de consumir,\nde modo que un consumidor que conoce una API pueda usar cualquier otra sin sorpresas."
+ },
+ {
+  "id": "EST-API-001-S02",
+  "titulo": "Alcance",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-API-001",
+  "version": "2.0",
+  "fecha": "2026-01-19",
+  "seccion": "2",
+  "pagina": 3,
+  "texto": "Aplica a todas las APIs HTTP expuestas por sistemas de la empresa, internas o externas, construidas con\nASP.NET Core. Las APIs que consumen aplicaciones Angular, móviles y de escritorio están incluidas.\nComplementa a EST-SEG-001 (seguridad) y EST-WEB-001 (convenciones de código C#)."
+ },
+ {
+  "id": "EST-API-001-S03",
+  "titulo": "Definiciones y niveles de cumplimiento",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-API-001",
+  "version": "2.0",
+  "fecha": "2026-01-19",
+  "seccion": "3",
+  "pagina": 3,
+  "texto": "Término\nDefinición\nObligatorio\nLa regla debe cumplirse en todo desarrollo nuevo y en todo cambio sobre código existente.\nSu incumplimiento bloquea el pase a producción salvo excepción aprobada.\nRecomendado\nBuena práctica esperada. Su incumplimiento no bloquea el pase, pero debe justificarse en la\nrevisión de código.\nProhibido\nPráctica que no debe aparecer en el código. Equivale a una regla obligatoria en sentido\nnegativo.\nExcepción\nAutorización temporal (máximo 6 meses) para no cumplir una regla obligatoria. La aprueba el\nComité de Arquitectura y, si la regla es de seguridad, también Seguridad de la Información.\nSe registra en el formulario FOR-ARQ-07.\nRecurso\nEntidad de negocio expuesta por la API e identificada por una URL (por ejemplo un cliente).\nIdempotente\nOperación que produce el mismo resultado si se ejecuta una o varias veces.\nProblem Details\nFormato estándar de errores HTTP en JSON definido por el RFC 9457.\nBFF\nBackend for Frontend: API dedicada a un único frontend."
+ },
+ {
+  "id": "EST-API-001-S10",
+  "titulo": "Relación con otros estándares",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-API-001",
+  "version": "2.0",
+  "fecha": "2026-01-19",
+  "seccion": "10",
+  "pagina": 8,
+  "texto": "Las reglas de seguridad de EST-SEG-001 aplican a todas las APIs aunque no se repitan aquí. Las\nconvenciones de código C# y de base de datos están en EST-WEB-001."
+ },
+ {
+  "id": "EST-DSK-001-S01",
+  "titulo": "Objetivo",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-DSK-001",
+  "version": "1.4",
+  "fecha": "2023-08-14",
+  "seccion": "1",
+  "pagina": 3,
+  "texto": "Definir la arquitectura, las convenciones de código y de base de datos, y la forma de distribución de las\naplicaciones de escritorio Windows de la empresa."
+ },
+ {
+  "id": "EST-DSK-001-S02",
+  "titulo": "Alcance",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-DSK-001",
+  "version": "1.4",
+  "fecha": "2023-08-14",
+  "seccion": "2",
+  "pagina": 3,
+  "texto": "Aplica a las aplicaciones de escritorio desarrolladas en WPF y WinForms que usan los colaboradores en\nagencias y oficinas, incluidas las bases de datos SQL Server que estas aplicaciones utilizan. Las reglas\nde seguridad están en EST-SEG-001, que prevalece sobre este documento."
+ },
+ {
+  "id": "EST-DSK-001-S03",
+  "titulo": "Definiciones y niveles de cumplimiento",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-DSK-001",
+  "version": "1.4",
+  "fecha": "2023-08-14",
+  "seccion": "3",
+  "pagina": 3,
+  "texto": "Término\nDefinición\nObligatorio\nLa regla debe cumplirse en todo desarrollo nuevo y en todo cambio sobre código existente.\nSu incumplimiento bloquea el pase a producción salvo excepción aprobada.\nRecomendado\nBuena práctica esperada. Su incumplimiento no bloquea el pase, pero debe justificarse en la\nrevisión de código.\nProhibido\nPráctica que no debe aparecer en el código. Equivale a una regla obligatoria en sentido\nnegativo.\nExcepción\nAutorización temporal (máximo 6 meses) para no cumplir una regla obligatoria. La aprueba el\nComité de Arquitectura y, si la regla es de seguridad, también Seguridad de la Información.\nSe registra en el formulario FOR-ARQ-07.\nMVVM\nModel-View-ViewModel: patrón que separa la vista (XAML) de la lógica de presentación\n(ViewModel).\nMSIX\nFormato de empaquetado e instalación de aplicaciones Windows con soporte de firma y\nactualización.\nDPAPI\nData Protection API de Windows, cifra datos con una clave ligada al usuario o al equipo."
+ },
+ {
+  "id": "EST-DSK-001-S06",
+  "titulo": "Base de datos SQL Server",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-DSK-001",
+  "version": "1.4",
+  "fecha": "2023-08-14",
+  "seccion": "6",
+  "pagina": 5,
+  "texto": "Nota: la nomenclatura de este capítulo es la vigente para las bases de datos de las aplicaciones de\nescritorio existentes. Se encuentra en revisión para alinearse con el estándar de desarrollo web."
+ },
+ {
+  "id": "EST-DSK-001-S09",
+  "titulo": "Relación con otros estándares",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-DSK-001",
+  "version": "1.4",
+  "fecha": "2023-08-14",
+  "seccion": "9",
+  "pagina": 7,
+  "texto": "EST-SEG-001 prevalece en temas de seguridad. La nomenclatura de base de datos de este documento\nse mantiene para las bases de datos existentes de aplicaciones de escritorio."
+ },
+ {
+  "id": "EST-REF-001-S01",
+  "titulo": "Objetivo",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-REF-001",
+  "version": "1.3",
+  "fecha": "2026-03-10",
+  "seccion": "1",
+  "pagina": 3,
+  "texto": "Indicar qué estándares externos adopta la empresa, en qué versión y con qué nivel de exigencia, y\nrelacionar cada control externo con las reglas internas que lo implementan."
+ },
+ {
+  "id": "EST-REF-001-S02",
+  "titulo": "Alcance",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-REF-001",
+  "version": "1.3",
+  "fecha": "2026-03-10",
+  "seccion": "2",
+  "pagina": 3,
+  "texto": "Complementa a EST-SEG-001, EST-API-001, EST-WEB-001 y EST-DSK-001. Este documento es un\nresumen interno: ante cualquier duda de interpretación prevalece la publicación oficial de OWASP\n(owasp.org). Los textos de cada control son paráfrasis, no traducciones literales."
+ },
+ {
+  "id": "EST-REF-001-S03",
+  "titulo": "Definiciones y niveles de cumplimiento",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-REF-001",
+  "version": "1.3",
+  "fecha": "2026-03-10",
+  "seccion": "3",
+  "pagina": 3,
+  "texto": "Término\nDefinición\nObligatorio\nLa regla debe cumplirse en todo desarrollo nuevo y en todo cambio sobre código existente.\nSu incumplimiento bloquea el pase a producción salvo excepción aprobada.\nRecomendado\nBuena práctica esperada. Su incumplimiento no bloquea el pase, pero debe justificarse en la\nrevisión de código.\nProhibido\nPráctica que no debe aparecer en el código. Equivale a una regla obligatoria en sentido\nnegativo.\nExcepción\nAutorización temporal (máximo 6 meses) para no cumplir una regla obligatoria. La aprueba el\nComité de Arquitectura y, si la regla es de seguridad, también Seguridad de la Información.\nSe registra en el formulario FOR-ARQ-07.\nOWASP\nOpen Worldwide Application Security Project, fundación sin fines de lucro que publica guías\nabiertas de seguridad de aplicaciones.\nNivel de verificación\nGrado de rigor con que se verifica una aplicación: L1, L2 o L3 en ASVS; MAS-L1, MAS-L2 y\nMAS-R en MASVS."
+ },
+ {
+  "id": "EST-REF-001-S05",
+  "titulo": "OWASP Top 10 (2021)",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-REF-001",
+  "version": "1.3",
+  "fecha": "2026-03-10",
+  "seccion": "5",
+  "pagina": 4,
+  "texto": "Lista de concienciación de los diez riesgos más críticos en aplicaciones web. No es un estándar\nverificable por sí mismo: los requisitos verificables están en ASVS."
+ },
+ {
+  "id": "EST-REF-001-S07",
+  "titulo": "OWASP ASVS 4.0.3 por capítulo",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-REF-001",
+  "version": "1.3",
+  "fecha": "2026-03-10",
+  "seccion": "7",
+  "pagina": 7,
+  "texto": "Resumen de los catorce capítulos de ASVS 4.0.3 con los requisitos más citados en los estándares\ninternos. La lista completa de requisitos se consulta en la publicación oficial."
+ },
+ {
+  "id": "EST-REF-001-S09",
+  "titulo": "Fuentes oficiales",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-REF-001",
+  "version": "1.3",
+  "fecha": "2026-03-10",
+  "seccion": "9",
+  "pagina": 10,
+  "texto": "OWASP Top 10: owasp.org/Top10. OWASP API Security Top 10: owasp.org/API-Security. OWASP\nASVS: owasp.org/www-project-application-security-verification-standard. OWASP MASVS y MASTG:\nmas.owasp.org. Los contenidos de OWASP se publican bajo licencia Creative Commons BY-SA."
+ },
+ {
+  "id": "EST-SEG-001-S01",
+  "titulo": "Objetivo",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-SEG-001",
+  "version": "2.1",
+  "fecha": "2026-03-10",
+  "seccion": "1",
+  "pagina": 3,
+  "texto": "Establecer los controles mínimos de seguridad que deben cumplir las aplicaciones desarrolladas o\nadquiridas por la empresa, de modo que las vulnerabilidades más frecuentes se prevengan durante el\ndiseño y la construcción y no se descubran recién en producción."
+ },
+ {
+  "id": "EST-SEG-001-S02",
+  "titulo": "Alcance",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-SEG-001",
+  "version": "2.1",
+  "fecha": "2026-03-10",
+  "seccion": "2",
+  "pagina": 3,
+  "texto": "Aplica a todas las aplicaciones web (Angular + ASP.NET Core), APIs, aplicaciones móviles (.NET MAUI,\nAndroid e iOS nativas) y aplicaciones de escritorio (.NET WPF y WinForms), sean desarrolladas por\nequipos internos o por proveedores. Este estándar prevalece sobre cualquier otro estándar de desarrollo\nen materia de seguridad. Las referencias externas se detallan en EST-REF-001."
+ },
+ {
+  "id": "EST-SEG-001-S03",
+  "titulo": "Definiciones y niveles de cumplimiento",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-SEG-001",
+  "version": "2.1",
+  "fecha": "2026-03-10",
+  "seccion": "3",
+  "pagina": 3,
+  "texto": "Término\nDefinición\nObligatorio\nLa regla debe cumplirse en todo desarrollo nuevo y en todo cambio sobre código existente.\nSu incumplimiento bloquea el pase a producción salvo excepción aprobada.\nRecomendado\nBuena práctica esperada. Su incumplimiento no bloquea el pase, pero debe justificarse en la\nrevisión de código.\nProhibido\nPráctica que no debe aparecer en el código. Equivale a una regla obligatoria en sentido\nnegativo.\nExcepción\nAutorización temporal (máximo 6 meses) para no cumplir una regla obligatoria. La aprueba el\nComité de Arquitectura y, si la regla es de seguridad, también Seguridad de la Información.\nSe registra en el formulario FOR-ARQ-07.\nASVS\nOWASP Application Security Verification Standard, versión 4.0.3 adoptada por la empresa.\nMASVS\nOWASP Mobile Application Security Verification Standard, versión 2.x.\nDato sensible\nCredenciales, tokens, número de documento de identidad, datos de tarjeta, datos de salud,\ninformación financiera de clientes y cualquier dato clasificado como Confidencial."
+ },
+ {
+  "id": "EST-SEG-001-S11",
+  "titulo": "Aplicaciones móviles",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-SEG-001",
+  "version": "2.1",
+  "fecha": "2026-03-10",
+  "seccion": "11",
+  "pagina": 10,
+  "texto": "Las reglas de este capítulo complementan las anteriores para aplicaciones .NET MAUI, Android (Kotlin) e\niOS (Swift). Las aplicaciones que realizan transacciones monetarias deben cumplir además el perfil\nMAS-L2 y los controles de resiliencia (ver EST-REF-001)."
+ },
+ {
+  "id": "EST-SEG-001-S13",
+  "titulo": "Excepciones",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-SEG-001",
+  "version": "2.1",
+  "fecha": "2026-03-10",
+  "seccion": "13",
+  "pagina": 12,
+  "texto": "Las excepciones a reglas de este estándar se solicitan con el formulario FOR-ARQ-07, incluyendo el\nriesgo aceptado, los controles compensatorios y la fecha de vencimiento. La vigencia máxima es de 6\nmeses y no son renovables más de una vez."
+ },
+ {
+  "id": "EST-SEG-001-S14",
+  "titulo": "Verificación del cumplimiento",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-SEG-001",
+  "version": "2.1",
+  "fecha": "2026-03-10",
+  "seccion": "14",
+  "pagina": 13,
+  "texto": "El cumplimiento se verifica en la revisión de código, en el pipeline (SAST, análisis de dependencias,\ndetección de secretos) y en las pruebas de penetración anuales. Los hallazgos se gestionan según su\nseveridad: crítica 7 días, alta 30 días, media 90 días, baja 180 días."
+ },
+ {
+  "id": "EST-WEB-001-S01",
+  "titulo": "Objetivo",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-WEB-001",
+  "version": "3.0",
+  "fecha": "2026-02-02",
+  "seccion": "1",
+  "pagina": 3,
+  "texto": "Unificar la arquitectura, las convenciones de código y la nomenclatura de base de datos de las\naplicaciones web de la empresa, para que cualquier desarrollador pueda mantener cualquier sistema y\npara que la revisión de código sea objetiva."
+ },
+ {
+  "id": "EST-WEB-001-S02",
+  "titulo": "Alcance",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-WEB-001",
+  "version": "3.0",
+  "fecha": "2026-02-02",
+  "seccion": "2",
+  "pagina": 3,
+  "texto": "Aplica a las aplicaciones web nuevas y a los cambios sobre las existentes construidas con Angular\n(frontend), ASP.NET Core (backend) y SQL Server (base de datos). La nomenclatura de base de datos de\neste documento aplica también a toda base de datos nueva, sea cual sea la aplicación que la consuma.\nLas reglas de seguridad están en EST-SEG-001 y las de diseño de APIs en EST-API-001."
+ },
+ {
+  "id": "EST-WEB-001-S03",
+  "titulo": "Definiciones y niveles de cumplimiento",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-WEB-001",
+  "version": "3.0",
+  "fecha": "2026-02-02",
+  "seccion": "3",
+  "pagina": 3,
+  "texto": "Término\nDefinición\nObligatorio\nLa regla debe cumplirse en todo desarrollo nuevo y en todo cambio sobre código existente.\nSu incumplimiento bloquea el pase a producción salvo excepción aprobada.\nRecomendado\nBuena práctica esperada. Su incumplimiento no bloquea el pase, pero debe justificarse en la\nrevisión de código.\nProhibido\nPráctica que no debe aparecer en el código. Equivale a una regla obligatoria en sentido\nnegativo.\nExcepción\nAutorización temporal (máximo 6 meses) para no cumplir una regla obligatoria. La aprueba el\nComité de Arquitectura y, si la regla es de seguridad, también Seguridad de la Información.\nSe registra en el formulario FOR-ARQ-07.\nSPA\nSingle Page Application: aplicación Angular que se ejecuta en el navegador y consume APIs.\nPascalCase\nCada palabra inicia en mayúscula, sin separadores: DetallePedido.\ncamelCase\nComo PascalCase pero la primera letra en minúscula: detallePedido.\nkebab-case\nPalabras en minúscula separadas por guion: detalle-pedido."
+ },
+ {
+  "id": "EST-WEB-001-S07",
+  "titulo": "Base de datos SQL Server: nomenclatura",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-WEB-001",
+  "version": "3.0",
+  "fecha": "2026-02-02",
+  "seccion": "7",
+  "pagina": 7,
+  "texto": "Esta nomenclatura es obligatoria para toda base de datos nueva desde la versión 3.0 de este estándar.\nLas bases existentes que usan la nomenclatura anterior (prefijo TBL_ y mayúsculas, ver EST-DSK-001)\nno se renombran: los objetos nuevos que se agreguen a ellas siguen la nomenclatura de la base."
+ },
+ {
+  "id": "EST-WEB-001-S10",
+  "titulo": "Relación con otros estándares",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-WEB-001",
+  "version": "3.0",
+  "fecha": "2026-02-02",
+  "seccion": "10",
+  "pagina": 11,
+  "texto": "En caso de conflicto entre este documento y EST-SEG-001 prevalece EST-SEG-001. En caso de conflicto\ncon EST-DSK-001 en nomenclatura de base de datos prevalece este documento para bases de datos\nnuevas, por ser la versión más reciente."
+ },
+ {
+  "id": "EST-BPA-001-S01",
+  "titulo": "Generalidades",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "1",
+  "pagina": 2,
+  "texto": "1.1 OBJETIVO\nEstablecer los lineamientos para el uso de las Interfaces de Programación de Aplicaciones (API) para la\nprovisión de Servicios en Línea, que son implementados de manera interna o por proveedores externos,\na fin de que se contemplen consideraciones adecuadas para el desarrollo, pruebas y despliegue a\nproducción de las API's para los sistemas de La Institución.\n1.2 ALCANCE\nEl Manual de Uso de las Interfaces de Programación de Aplicaciones (API) para la provisión de Servicios\nen Línea, se aplica a toda implementación y mantenimiento de API's para los Sistemas Informáticos de\nLa Institución, que son implementados por el Departamento de Sistemas y/o por proveedores de\ndesarrollo de software externos, esto implica:\n• Análisis de riesgos asociados e implementar las medidas de mitigación.\n• La autenticación mutua de los sistemas y la de los usuarios.\n• La autorización de las operaciones por parte de los usuarios.\n• El cifrado de datos en almacenamiento o transmisión.\n• Prácticas de desarrollo seguro de API y revisión de prácticas de codificación segura.\n• Análisis de vulnerabilidades y pruebas de penetración.\n• La seguridad de la infraestructura tecnológica que lo soporta.\n• Los mecanismos de tolerancia ante fallos y de contingencia.\nTodo debe estar alineado al desarrollo, pruebas y despliegue a producción de estas API's para su uso en\nlos diversos sistemas informáticos de la INSTITUCIÓN."
+ },
+ {
+  "id": "EST-BPA-001-S0203",
+  "titulo": "Responsables de la ejecución del manual de uso de las interfaces de programación de aplicaciones (API)",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "2.3",
+  "pagina": 4,
+  "texto": "Los responsables de la ejecución del manual serán:\n-  Analista Funcional.\n-  Analista de desarrollo de software.\n-  Analista de control de calidad de software.\n-  Auxiliar de desarrollo de software.\n-  Auxiliar de control de calidad de software.\n-  Sub-Jefe de Control de Calidad.\n-  Empresas de Desarrollo de software.\n-  Oficial de Seguridad de la Información (CISO) / Ciberseguridad\n-  Oficial de Cumplimiento / Legal"
+ },
+ {
+  "id": "EST-BPA-001-S03",
+  "titulo": "Análisis de riesgos asociados a la implementación de API's",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3",
+  "pagina": 5,
+  "texto": "El análisis de riesgo adecuado de las implementaciones de las API's, se deberá considerar efectuarlo en\ntodas las etapas de los proyectos y/o requerimientos. Debiendo documentar la evidencia de este\nanálisis."
+ },
+ {
+  "id": "EST-BPA-001-S0301",
+  "titulo": "Riesgos de Planificación",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.1",
+  "pagina": 5,
+  "texto": "• No definir de manera especifica todos los problemas dentro del proyecto a desarrollar\n• No contar con objetivos claros\n• No contar con una propuesta metodológica adecuada\n• No contar con un adecuado cronograma de plan de trabajo"
+ },
+ {
+  "id": "EST-BPA-001-S0304",
+  "titulo": "Mitigación de Vulnerabilidades y Riesgos de Seguridad asociados en la implementación de las API's",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.4",
+  "pagina": 7,
+  "texto": "La Fundación Open Web Application Security Project (OWASP) trabaja para mejorar la seguridad del\nsoftware a través de sus proyectos de software de código abierto liderados por la comunidad, cientos de\ncapítulos en todo el mundo, decenas de miles de miembros y organizando conferencias locales y\nglobales.\nEl Proyecto de Seguridad API de OWASP se enfoca en estrategias y soluciones para comprender y\nmitigar las vulnerabilidades únicas y los riesgos de seguridad de las API."
+ },
+ {
+  "id": "EST-BPA-001-S05",
+  "titulo": "Bibliografía",
+  "nivel": "Informativo",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "5",
+  "pagina": 21,
+  "texto": "• Application Security Verification Standard – OWASP.\n• Plan de Seguridad para plataformas empleando normas ISO-27001 y considerando el OWASP top 10.\n• Dominio principal sobre API: https://github.com/OWASP/API-security.\n• Resolución de la Superintendencia de Banca y Seguros (SBS) N° 504.\n• Superintendencia de Banca, Seguros y AFP (SBS):\n• Resolución SBS N° 504-2021: Reglamento para la Gestión de la Seguridad de la Información y la\nCiberseguridad.\n• Resolución SBS N° 01747-2026: Reglamento para la prestación del modelo Banking as a Service\n(BaaS).\n• Resolución SBS N° 02519-2026: Estándares de Infraestructura Digital, Seguridad y Calidad para el\nSistema de Finanzas Abiertas.\n• Normativa Nacional de Protección de Datos:\n• Ley N° 29733: Ley de Protección de Datos Personales del Perú y su Reglamento (Decreto\nSupremo N° 003-2013-JUS).\n• Estándares Internacionales de Industria:\n• OWASP API Security Top 10 (Edición 2023).\n• NIST SP 800-204: Security Strategies for Microservices-based Application Systems.\n• ISO/IEC 27001:2022: Controles de seguridad A.8.25 (Desarrollo seguro) y A.8.26 (Requisitos de\nseguridad de las aplicaciones).\n• RFC 7807 / RFC 9457 (IETF): Problem Details for HTTP APIs.\n• OpenAPI Specification v3.1."
+ }
+]

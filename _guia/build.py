@@ -1,4 +1,4 @@
-"""python _guia/build.py  →  guia_laboratorio_07.html
+"""python _guia/build.py  →  guia_implementacion.html
 
 Genera la guía HTML con el mismo formato de los laboratorios 04-06. El texto sale de _guia/guia.md y
 TODO el código se inyecta desde los archivos reales del proyecto: la guía no puede quedar desactualizada
@@ -15,7 +15,7 @@ import markdown
 
 AQUI = Path(__file__).resolve().parent
 RAIZ = AQUI.parent
-SALIDA = RAIZ / "guia_laboratorio_07.html"
+SALIDA = RAIZ / "guia_implementacion.html"
 LARGO = 45   # bloques con más líneas se muestran plegados con «Ver completo»
 
 TITULOS = {  # título corto de cada paso en la barra lateral
@@ -24,6 +24,8 @@ TITULOS = {  # título corto de cada paso en la barra lateral
     7: "parches.py y guardas.py", 8: "El especialista: LLM y ReAct", 9: "supervisor.py · aprobación humana",
     10: "Reporte, CLI y API", 11: "metricas.py · Prometheus", 12: "Evaluación y averías deliberadas",
     13: "Docker, Prometheus y Grafana", 14: "Windows", 15: "Modelo real, ejercicios y análisis",
+    16: "Chat: preguntas con citas", 17: "Router y chat → agente", 18: "Privacidad y prompt injection",
+    19: "Claude y OpenAI reales",
 }
 ICONOS = [("Copia y pega", "✍️"), ("Qué hace cada parte", "🔎"), ("Prueba", "🧪"), ("La suite", "🧪"),
           ("Ejecuta", "▶️"), ("Recorrido", "🧭"), ("Mapa", "🧭"), ("Levantar", "🚀"), ("Resumen", "📏"),
@@ -327,17 +329,19 @@ def portada(intro_md: str) -> str:
     tabla = lambda t: md(secciones[t].strip())  # noqa: E731
     return f"""<section class="hero" id="intro" data-title="Introducción y arquitectura">
   <div class="kicker">IA Generativa para Desarrolladores · Módulos 3, 4 y 5 · RAG, agentes y producción</div>
-  <h1>Un agente que corrige estándares de desarrollo</h1>
+  <h1>Un chat y un agente que corrigen estándares de desarrollo</h1>
   <p class="lead">Construirás, en Python puro y sin frameworks de agentes, un sistema que revisa código <b>C#</b>, <b>XAML</b>,
   <b>Angular/TypeScript</b>, <b>T-SQL</b> y <b>archivos de configuración</b> contra los cinco estándares de Empresa Ejemplo S.A.
   Los detectores encuentran los incumplimientos, un <b>especialista LLM</b> propone correcciones, una <b>guarda</b> las valida
-  re-analizando el código y un <b>humano</b> decide qué se aplica, siempre en una copia.</p>
+  re-analizando el código y un <b>humano</b> decide qué se aplica, siempre en una copia. Un <b>chat</b> responde
+  preguntas sobre los estándares con la regla y su página, y le pasa al agente el código que le pegues.</p>
   <div class="goal-grid">
     <div class="goal"><b>1 · Catalogar</b>Los cinco PDF se convierten en 170 reglas con cita exacta (documento, versión, sección, página).</div>
     <div class="goal"><b>2 · Detectar</b>88 detectores deterministas, cada uno atado a una regla y medidos contra los ejemplos de los PDF.</div>
     <div class="goal"><b>3 · Corregir</b>Autofix para lo mecánico; un especialista por lenguaje con herramientas para lo demás.</div>
     <div class="goal"><b>4 · Controlar</b>Guardas que re-analizan cada parche, mínimo privilegio y aprobación humana.</div>
     <div class="goal"><b>5 · Observar</b>Traza auditable, reporte con citas, métricas en Prometheus y un tablero de Grafana.</div>
+    <div class="goal"><b>6 · Conversar</b>Un chat que responde con la regla y su página, se abstiene sin evidencia y deriva el código al agente.</div>
   </div>
   {FIGURA}
   <h3>Lenguajes y estándares cubiertos</h3>

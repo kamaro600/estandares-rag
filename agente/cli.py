@@ -37,6 +37,7 @@ def _preguntar(p, h) -> bool:
 
 
 def cmd_revisar(a: argparse.Namespace) -> int:
+    """Revisa archivos o carpetas desde la consola; devuelve 1 si el veredicto es NO_APTO (sirve como quality gate)."""
     settings = Settings().validar()
     ctx = Contexto(a.tipo or settings.tipo_app, a.bd or settings.modo_bd)
     entradas = recolectar(a.rutas)

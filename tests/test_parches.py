@@ -1,3 +1,4 @@
+"""Aplicación de parches: de abajo hacia arriba, sin superposiciones, y diff unificado para descargar."""
 from agente.parches import Parche, aplicar, diff
 
 

@@ -1,27 +1,34 @@
-"""API HTTP (Starlette) y página web: revisar código, aprobar parches y descargar lo corregido.
+"""API HTTP (Starlette) y página web: chat sobre los estándares, revisar código, aprobar parches y descargar.
 
-La API nunca escribe archivos: devuelve el contenido corregido y el navegador lo descarga.
+La API nunca escribe archivos del usuario: devuelve el contenido corregido y el navegador lo descarga.
+Aplica a sí misma lo que exigen los estándares: errores en Problem Details (API-RES-002), cabeceras de seguridad
+(SEG-CFG-001), límite de tasa con 429 y Retry-After (API-SEG-003) y contratos que validan la entrada (API-SEG-004).
 """
 from __future__ import annotations
 
 import threading
+import time
 import uuid
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict, deque
 from pathlib import Path
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import ValidationError
 from starlette.applications import Starlette
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse, Response
 from starlette.routing import Route
 
-from agente import catalogo, config, metricas, rag
+from agente import catalogo, config, embeddings, metricas, rag
 from agente.config import Settings
 from agente.contexto import Contexto
+from agente.contratos import MensajeChat, SolicitudAprobacion, SolicitudRevision
+from agente.conversacion import Chat
+from agente.db import NoExiste, Repositorio
 from agente.detectores import EXTENSIONES, cargar_detectores
 from agente.llm import crear_llm
 from agente.reporte import a_dict
+from agente.router import Router
 from agente.supervisor import Supervisor
 from agente.trace import Tracer
 from agente.workers import REVISION_SEMANTICA
@@ -43,64 +50,89 @@ CABECERAS_WEB = {"Content-Security-Policy": "default-src 'self'; frame-ancestors
                  "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer"}
 
 
-class ArchivoEntrada(BaseModel):
-    nombre: str = Field(min_length=1, max_length=260)
-    contenido: str = Field(max_length=config.MAX_BYTES_ARCHIVO)
-
-
-class SolicitudRevision(BaseModel):
-    tipo_app: str = Field(default="web", pattern="^(web|api|escritorio|movil)$")
-    modo_bd: str = Field(default="nueva", pattern="^(nueva|legada)$")
-    usar_llm: bool = True
-    archivos: list[ArchivoEntrada] = Field(min_length=1, max_length=config.MAX_ARCHIVOS)
-
-
-class Aprobado(BaseModel):
-    archivo: str
-    parche: str = Field(pattern=r"^P\d{3}$")
-
-
-class SolicitudAprobacion(BaseModel):
-    aprobados: list[Aprobado] = Field(default_factory=list, max_length=config.MAX_ARCHIVOS * 20)
-
-
-def _problema(status: int, titulo: str, detalle: str, **extra) -> JSONResponse:
+def _problema(status: int, titulo: str, detalle: str, headers: dict | None = None, **extra) -> JSONResponse:
     """Errores en Problem Details (RFC 9457), como exige API-RES-002 a las APIs de la empresa."""
     return JSONResponse({"type": "about:blank", "title": titulo, "status": status, "detail": detalle, **extra},
-                        status_code=status, media_type="application/problem+json")
+                        status_code=status, media_type="application/problem+json", headers=headers)
+
+
+class LimiteTasa:
+    """Ventana deslizante en memoria por IP. Basta para un proceso; con varias réplicas iría en Redis."""
+
+    def __init__(self, por_minuto: int):
+        self.por_minuto, self.eventos, self.candado = por_minuto, defaultdict(deque), threading.Lock()
+
+    def esperar(self, clave: str) -> int:
+        """0 si se permite; si no, segundos que hay que esperar."""
+        ahora = time.monotonic()
+        with self.candado:
+            cola = self.eventos[clave]
+            while cola and ahora - cola[0] > 60:
+                cola.popleft()
+            if len(cola) >= self.por_minuto:
+                return int(60 - (ahora - cola[0])) + 1
+            cola.append(ahora)
+            return 0
+
+
+def _limitado(request: Request) -> JSONResponse | None:
+    espera = request.app.state.limite.esperar(request.client.host if request.client else "?")
+    if not espera:
+        return None
+    metricas.LIMITE_TASA.inc()
+    return _problema(429, "Demasiadas solicitudes", f"Límite de {request.app.state.limite.por_minuto} por minuto.",
+                     headers={"Retry-After": str(espera)})
+
+
+async def _json_valido(request: Request, modelo):
+    """(objeto validado, None) o (None, respuesta de error en Problem Details)."""
+    try:
+        return modelo.model_validate(await request.json()), None
+    except ValidationError as e:
+        errores = {".".join(map(str, x["loc"])): x["msg"] for x in e.errors()}
+        return None, _problema(400, "Solicitud inválida", "Revisa los campos indicados.", errors=errores)
+    except ValueError:
+        return None, _problema(400, "Solicitud inválida", "El cuerpo no es JSON válido.")
+
+
+def _ejecutar_revision(app, solicitud: SolicitudRevision, tracer: Tracer, conversacion_id: int | None = None):
+    """El agente sobre una solicitud ya validada: Supervisor → especialistas → guardas. Síncrono (va en un hilo)."""
+    llm = app.state.llm if solicitud.usar_llm else None
+    sup = Supervisor(Contexto(solicitud.tipo_app, solicitud.modo_bd), llm, tracer)
+    rev = sup.revisar([(a.nombre, a.contenido) for a in solicitud.archivos], solicitud.usar_llm)
+    metricas.REVISIONES.inc(veredicto=rev.veredicto())
+    return _guardar(app, rev, sup, conversacion_id), a_dict(rev)
 
 
 async def revisar(request: Request) -> JSONResponse:
+    """POST /v1/revisiones: valida el contrato, ejecuta el agente en un hilo y devuelve el resultado con su trace_id."""
     if int(request.headers.get("content-length") or 0) > MAX_CUERPO:
         return _problema(413, "Petición demasiado grande", f"Máximo {MAX_CUERPO} bytes.")
-    try:
-        solicitud = SolicitudRevision.model_validate(await request.json())
-    except ValidationError as e:
-        errores = {".".join(map(str, x["loc"])): x["msg"] for x in e.errors()}
-        return _problema(400, "Solicitud inválida", "Revisa los campos indicados.", errors=errores)
-    except ValueError:
-        return _problema(400, "Solicitud inválida", "El cuerpo no es JSON válido.")
-    llm = request.app.state.llm if solicitud.usar_llm else None
-    sup = Supervisor(Contexto(solicitud.tipo_app, solicitud.modo_bd), llm, Tracer())
+    if (limitado := _limitado(request)) is not None:
+        return limitado
+    solicitud, error = await _json_valido(request, SolicitudRevision)
+    if error:
+        return error
+    tracer = Tracer()
     # El análisis y el LLM son síncronos: en un hilo aparte para no bloquear el bucle de eventos.
-    rev = await run_in_threadpool(sup.revisar, [(a.nombre, a.contenido) for a in solicitud.archivos],
-                                  solicitud.usar_llm)
-    metricas.REVISIONES.inc(veredicto=rev.veredicto())
-    revision_id = _guardar(request.app, rev, sup)
-    resultado = {"revision_id": revision_id, **a_dict(rev)}
-    resultado["modelo"] = None if llm is None else _etiqueta_modelo(llm)
-    return JSONResponse(resultado)
+    revision_id, resultado = await run_in_threadpool(_ejecutar_revision, request.app, solicitud, tracer)
+    request.app.state.repo.guardar_traza(tracer.id, None, tracer.eventos)
+    tracer.guardar()
+    llm = request.app.state.llm if solicitud.usar_llm else None
+    return JSONResponse({"revision_id": revision_id, "trace_id": tracer.id, **resultado,
+                         "modelo": None if llm is None else _etiqueta_modelo(llm)})
 
 
 def _etiqueta_modelo(llm) -> str:
     return "mock" if llm.proveedor == "mock" else f"{llm.proveedor}:{llm.modelo}"
 
 
-def _guardar(app, rev, sup) -> str:
+def _guardar(app, rev, sup, conversacion_id: int | None = None) -> str:
     """La revisión queda en memoria para que un humano apruebe sus parches después."""
     revision_id = uuid.uuid4().hex
     with app.state.candado:
-        app.state.revisiones[revision_id] = {"rev": rev, "sup": sup, "decidida": False}
+        app.state.revisiones[revision_id] = {"rev": rev, "sup": sup, "decidida": False,
+                                             "conversacion_id": conversacion_id}
         while len(app.state.revisiones) > MAX_REVISIONES_EN_MEMORIA:
             app.state.revisiones.popitem(last=False)
     return revision_id
@@ -108,13 +140,9 @@ def _guardar(app, rev, sup) -> str:
 
 async def aprobar(request: Request) -> JSONResponse:
     """La aprobación humana por HTTP: solo se aplican los parches enviados; el resto queda denegado."""
-    try:
-        solicitud = SolicitudAprobacion.model_validate(await request.json())
-    except ValidationError as e:
-        errores = {".".join(map(str, x["loc"])): x["msg"] for x in e.errors()}
-        return _problema(400, "Solicitud inválida", "Revisa los campos indicados.", errors=errores)
-    except ValueError:
-        return _problema(400, "Solicitud inválida", "El cuerpo no es JSON válido.")
+    solicitud, error = await _json_valido(request, SolicitudAprobacion)
+    if error:
+        return error
     with request.app.state.candado:
         guardada = request.app.state.revisiones.get(request.path_params["revision_id"])
         if guardada is None:
@@ -131,12 +159,45 @@ async def aprobar(request: Request) -> JSONResponse:
                              desconocidos=[f"{a} {p}" for a, p in sorted(pedidos - existentes)])
         guardada["decidida"] = True
     cambios = await run_in_threadpool(sup.corregir, rev, lambda p, h: (p.archivo, p.id) in pedidos)
-    return JSONResponse({**a_dict(rev), "revision_id": request.path_params["revision_id"],
-                         "corregidos": [{"archivo": c.nombre, "contenido": c.contenido, "diff": c.diff}
-                                        for c in cambios]})
+    reporte = a_dict(rev)
+    respuesta = {**reporte, "revision_id": request.path_params["revision_id"],
+                 "corregidos": [{"archivo": c.nombre, "contenido": c.contenido, "diff": c.diff} for c in cambios]}
+    if guardada.get("conversacion_id"):   # la decisión humana vuelve al chat de origen
+        respuesta["mensaje_chat"] = request.app.state.chat.notificar_aprobacion(
+            guardada["conversacion_id"], request.path_params["revision_id"], reporte, len(cambios))
+    return JSONResponse(respuesta)
+
+
+async def chat(request: Request) -> JSONResponse:
+    """POST /v1/chat: un turno de la conversación."""
+    if (limitado := _limitado(request)) is not None:
+        return limitado
+    m, error = await _json_valido(request, MensajeChat)
+    if error:
+        return error
+    try:
+        return JSONResponse(await run_in_threadpool(request.app.state.chat.enviar, m.conversacion_id, m.mensaje,
+                                                    m.tipo_app, m.modo_bd))
+    except NoExiste:
+        return _problema(404, "Conversación no encontrada", f"No existe la conversación {m.conversacion_id}.")
+
+
+async def leer_chat(request: Request) -> JSONResponse:
+    repo, cid = request.app.state.repo, request.path_params["conversacion_id"]
+    if not repo.existe(cid):
+        return _problema(404, "Conversación no encontrada", f"No existe la conversación {cid}.")
+    return JSONResponse({"conversacion_id": cid, "mensajes": repo.mensajes(cid)})
+
+
+async def traza(request: Request) -> JSONResponse:
+    try:
+        return JSONResponse(request.app.state.repo.traza(request.path_params["trace_id"]))
+    except NoExiste:
+        return _problema(404, "Traza no encontrada", "Las trazas se guardan por mensaje del chat y por revisión.")
 
 
 async def info(request: Request) -> JSONResponse:
+    """GET /v1/info: lo que la página necesita saber (modelo, extensiones aceptadas, límites y estándares cargados)."""
     llm = request.app.state.llm
     lenguajes = {l: {"lenguaje": l, "extensiones": sorted(e for e, x in EXTENSIONES.items() if x == l),
                      "patrones": sum(l in p.lenguajes for p in cargar_detectores()),
@@ -145,7 +206,18 @@ async def info(request: Request) -> JSONResponse:
                          "lenguajes": list(lenguajes.values()), "familias": [{"nombre": n, "detalle": d, "extensiones": list(e)}
                                                                             for n, d, e in FAMILIAS],
                          "max_archivos": config.MAX_ARCHIVOS, "max_bytes_archivo": config.MAX_BYTES_ARCHIVO,
-                         "reglas": len(catalogo.cargar())})
+                         "reglas": len(catalogo.cargar()), "documentos": _documentos(), "embeddings": embeddings.descriptor()})
+
+
+def _documentos() -> list[dict]:
+    """Los estándares cargados, con su versión, cuántas reglas aportan y el PDF del que salen (panel lateral).
+    El archivo se muestra porque el código de un manual sin código propio (EST-BPA-001) lo asigna MANUALES."""
+    archivos = {catalogo.codigo_de(p): p.name for p in catalogo.pdfs()}
+    docs: dict[str, dict] = {}
+    for r in catalogo.cargar().values():
+        docs.setdefault(r.documento, {"codigo": r.documento, "version": r.version, "reglas": 0,
+                                      "archivo": archivos.get(r.documento, "")})["reglas"] += 1
+    return sorted(docs.values(), key=lambda d: d["codigo"])
 
 
 def _estatico(nombre: str, tipo: str):
@@ -170,7 +242,9 @@ async def buscar(request: Request) -> JSONResponse:
 
 
 async def salud(request: Request) -> JSONResponse:
-    return JSONResponse({"estado": "ok", "reglas": len(catalogo.cargar())})
+    return JSONResponse({"estado": "ok", "reglas": len(catalogo.cargar()), "secciones": len(catalogo.secciones()),
+                         "embeddings": embeddings.descriptor(), "modelo": _etiqueta_modelo(request.app.state.llm),
+                         "rag_min_score": request.app.state.settings.rag_min_score})
 
 
 async def metrics(request: Request) -> PlainTextResponse:
@@ -178,6 +252,11 @@ async def metrics(request: Request) -> PlainTextResponse:
 
 
 def crear_app(settings: Settings | None = None) -> Starlette:
+    """Fábrica de la aplicación (uvicorn agente.api:crear_app --factory).
+
+    Falla al arrancar, no en la primera petición, si la configuración es inválida, falta la ingesta o el
+    índice no corresponde a los embeddings o a los PDF actuales.
+    """
     config.load_env()
     settings = (settings or Settings()).validar()
     catalogo.cargar()        # falla al arrancar, no en la primera petición, si falta la ingesta
@@ -191,11 +270,18 @@ def crear_app(settings: Settings | None = None) -> Starlette:
         Route("/v1/revisiones/{revision_id}/aprobacion", aprobar, methods=["POST"]),
         Route("/v1/reglas/{regla_id}", regla),
         Route("/v1/buscar", buscar),
+        Route("/v1/chat", chat, methods=["POST"]),
+        Route("/v1/chat/{conversacion_id:int}", leer_chat),
+        Route("/v1/trazas/{trace_id}", traza),
         Route("/health", salud),
         Route("/metrics", metrics),
     ])
     app.state.settings = settings
     app.state.llm = crear_llm(settings)
     app.state.revisiones, app.state.candado = OrderedDict(), threading.Lock()
+    app.state.limite = LimiteTasa(settings.limite_por_minuto)
+    app.state.repo = Repositorio(config.DB_PATH)
+    app.state.chat = Chat(settings, app.state.llm, app.state.repo, Router(settings.router_min_score),
+                          lambda s, t, c: _ejecutar_revision(app, s, t, c))
     metricas.inicializar_series(tuple(sorted(set(EXTENSIONES.values()))))
     return app

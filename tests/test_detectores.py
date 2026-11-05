@@ -1,3 +1,4 @@
+"""C5: cada detector cita reglas que existen, y encuentra lo que los ejemplos de los estándares llaman incorrecto."""
 from pathlib import Path
 
 import pytest

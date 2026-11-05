@@ -89,6 +89,9 @@ def buscar_estandar(s: Sesion, a: BuscarEstandar) -> str:
 
 
 def proponer_parche(s: Sesion, a: ProponerParche) -> str:
+    """Herramienta del especialista: el parche pasa por la guarda antes de quedar propuesto; el texto devuelto
+    (ACEPTADO o RECHAZADO con el motivo) vuelve al modelo como tool_result.
+    """
     if len(s.parches) >= config.MAX_PARCHES_POR_ARCHIVO:
         raise ValueError(f"Límite de {config.MAX_PARCHES_POR_ARCHIVO} parches por archivo alcanzado.")
     h = next((x for x in s.hallazgos if x.id == a.hallazgo_id), None)

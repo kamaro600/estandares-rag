@@ -1,3 +1,4 @@
+"""C5/C6: la guarda acepta un parche correcto y rechaza, con un motivo legible, los que ocultan o crean incumplimientos."""
 import pytest
 
 from agente.contexto import Contexto

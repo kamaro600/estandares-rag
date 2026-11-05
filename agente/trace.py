@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -10,7 +11,9 @@ from agente import config
 
 
 class Tracer:
+    """Registro de eventos de una revisión o un turno del chat: se guarda en JSONL y en SQLite con su trace_id."""
     def __init__(self, destino: Path | None = None, consola: bool = False):
+        self.id = uuid.uuid4().hex       # trace_id: une el mensaje del chat, el router, la búsqueda y el agente
         self.eventos: list[dict] = []
         self.llamadas_llm = 0
         self.tokens_entrada = 0

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import re
 
-from agente.llm import Respuesta
+from agente.llm import Respuesta, RespuestaJSON
 
 
 def _lineas_de(tarea: str) -> dict[int, str]:
@@ -39,6 +39,9 @@ def _receta(h: dict, linea: str) -> tuple[str, str] | None:
 
 
 class MockLLM:
+    """Simulador determinista (no es un modelo): sigue un guion de reglas para practicar sin clave y para pruebas
+    repetibles. Solo sabe corregir unos pocos casos.
+    """
     proveedor = "mock"
 
     def responder(self, system: str, mensajes: list[dict], herramientas: list[dict]) -> Respuesta:
@@ -77,6 +80,21 @@ class MockLLM:
             return Respuesta(bloques, "tool_use", 200, 60)
         return Respuesta([{"type": "text", "text": "[simulado] Revisión terminada: parches propuestos y casos "
                                                    "derivados a revisión humana."}], "end_turn", 300, 30)
+
+
+    def generar_json(self, system: str, contexto: dict, esquema: dict, nombre: str) -> RespuestaJSON:
+        """El chat sin clave: reformula pegando la pregunta anterior y responde con el texto de la mejor regla."""
+        if nombre == "reformulacion":
+            previas = [m["texto"] for m in contexto.get("conversacion_previa", []) if m["rol"] == "usuario"]
+            consulta = f"{previas[-1]} {contexto['mensaje']}" if previas else contexto["mensaje"]
+            return RespuestaJSON({"consulta": consulta}, "mock", _tokens(consulta), 10)
+        reglas = contexto.get("estandares", [])
+        if not reglas:
+            return RespuestaJSON({"respuesta": "[simulado] No hay información en los estándares.", "citas": []}, "mock")
+        top = reglas[0]
+        texto = " ".join(top["texto"].split())[:450]
+        return RespuestaJSON({"respuesta": f"[simulado] Según {top['cita']}: {texto}", "citas": [top["id"]]}, "mock",
+                             _tokens(json.dumps(contexto)), 60)
 
 
 def _uso(n: int, nombre: str, entrada: dict) -> dict:

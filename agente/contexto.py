@@ -14,6 +14,7 @@ PRECEDENCIA = {"EST-SEG-001": 0, "EST-API-001": 1, "EST-WEB-001": 2, "EST-DSK-00
 
 @dataclass(frozen=True)
 class Contexto:
+    """Lo que decide qué reglas aplican: el tipo de aplicación y si la base de datos es nueva o existente."""
     tipo_app: str = "web"      # web | api | escritorio | movil
     modo_bd: str = "nueva"     # nueva (WEB-BD-*) | legada (DSK-BD-*, prefijo TBL_)
 

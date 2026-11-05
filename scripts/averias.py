@@ -34,6 +34,17 @@ AVERIAS = [
     ("móvil: evaluar un .kt como web", "agente/contexto.py", 'return replace(ctx, tipo_app="movil") if es_movil(archivo)', 'return ctx if es_movil(archivo)'),
     ("supervisor: sin revisión semántica", "agente/supervisor.py", "if (pendientes or a.lenguaje in REVISION_SEMANTICA) and usar_llm:", "if pendientes and usar_llm:"),
     ("api: aprobar todo sin mirar al humano", "agente/api.py", "lambda p, h: (p.archivo, p.id) in pedidos", "lambda p, h: True"),
+    # ---- chat, RAG y seguridad (C3, C4, C6) ----
+    ("chat: responder sin evidencia", "agente/conversacion.py", "        if not resultados:   # sin evidencia", "        if False:   # sin evidencia"),
+    ("chat: aceptar citas inventadas", "agente/conversacion.py", "validas = [c for c in pedidas if c in ids]", "validas = pedidas"),
+    ("chat: no revisar las reglas nombradas en el texto", "agente/conversacion.py", 'if not i.startswith("EST-") and i not in respaldo})', 'if False})'),
+    ("chat: no bloquear la inyección explícita", "agente/conversacion.py", "        if det.bloquear:", "        if False:"),
+    ("rag: sin complementos por conflicto", "agente/rag.py", "        if len({r.regla.documento for r in grupo}) < 2:", "        if True:"),
+    ("rag: buscar con un índice de otro embedder", "agente/rag.py", "    if descriptor != embeddings.descriptor():   # barato", "    if False:   # barato"),
+    ("router: código pegado tratado como consulta", "agente/router.py", 'if tiene_codigo and r.ruta != "revisar_codigo":', "if False:"),
+    ("privacidad: historial sin enmascarar hacia Claude", "agente/llm.py", "messages=enmascarar_mensajes(mensajes), tools=herramientas)", "messages=mensajes, tools=herramientas)"),
+    ("privacidad: embeddings sin enmascarar", "agente/embeddings.py", "input=[enmascarar(t) for t in textos[i:i + 100]])", "input=textos[i:i + 100])"),
+    ("api: sin límite de tasa", "agente/api.py", "    if not espera:\n        return None", "    if True:\n        return None"),
 ]
 
 

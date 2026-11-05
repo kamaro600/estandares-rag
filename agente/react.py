@@ -5,7 +5,7 @@ import json
 from dataclasses import dataclass
 
 from agente import config, metricas, tools
-from agente.llm import LLM
+from agente.llm import LLM, LLMError
 from agente.trace import Tracer
 
 
@@ -13,16 +13,25 @@ from agente.trace import Tracer
 class ResultadoAgente:
     texto_final: str
     iteraciones: int
-    motivo_fin: str   # respuesta | max_iteraciones | bucle
+    motivo_fin: str   # respuesta | max_iteraciones | bucle | error_llm
 
 
 def ejecutar_agente(llm: LLM, system: str, tarea: str, sesion: tools.Sesion,
                     permitidas: tuple[str, ...], tracer: Tracer, rol: str) -> ResultadoAgente:
+    """Bucle ReAct de un especialista: el modelo pide herramientas, se ejecutan y vuelven como tool_result.
+
+    Termina cuando el modelo responde sin herramientas, al llegar a MAX_REACT_ITERS o si repite la misma
+    llamada. Si el proveedor falla devuelve motivo_fin="error_llm": lo pendiente pasa a revisión humana.
+    """
     mensajes: list[dict] = [{"role": "user", "content": tarea}]
     esquemas = tools.esquemas(permitidas)
     vistas: dict[str, int] = {}
     for i in range(1, config.MAX_REACT_ITERS + 1):
-        r = llm.responder(system, mensajes, esquemas)
+        try:
+            r = llm.responder(system, mensajes, esquemas)
+        except LLMError as e:   # sin modelo, lo pendiente pasa a un humano: la revisión no se cae
+            tracer.evento("error_llm", rol=rol, detalle=str(e)[:200])
+            return ResultadoAgente(f"El modelo no respondió ({e}); lo pendiente pasa a revisión humana.", i, "error_llm")
         tracer.llm(rol, r.tokens_entrada, r.tokens_salida)
         metricas.LLM_LLAMADAS.inc(proveedor=llm.proveedor)
         metricas.LLM_TOKENS.inc(r.tokens_entrada, proveedor=llm.proveedor, tipo="entrada")
