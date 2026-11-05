@@ -21,7 +21,9 @@ Al terminar, responde con un resumen de 2 o 3 líneas sin llamar herramientas.""
 
 ESPECIFICO = {
     "csharp": "Especialidad: C# (.NET 8 ASP.NET Core, WPF/WinForms, MAUI). Async de extremo a extremo, "
-              "ILogger con plantillas, SQL parametrizado, DTOs en APIs.",
+              "ILogger con plantillas, SQL parametrizado, DTOs en APIs. Entity Framework Core: SaveChanges una sola "
+              "vez fuera del bucle, migraciones versionadas (no EnsureCreated), sin lazy loading, AsNoTracking en "
+              "lecturas, SQL crudo parametrizado.",
     "typescript": "Especialidad: Angular/TypeScript estricto. Sin any, HTTP solo en servicios, "
                   "sin tokens en localStorage, sin bypassSecurityTrust.",
     "html": "Especialidad: plantillas Angular. Confía en la sanitización de Angular.",
@@ -43,9 +45,16 @@ ESPECIFICO = {
               "biometría ligada a una clave (CryptoObject).",
     "swift": "Especialidad: iOS con Swift (EST-SEG-001 cap. 11). Keychain para secretos, ATS activo y pinning, "
              "WKWebView restringido, biometría ligada a un ítem del Keychain (SecAccessControl).",
+    "powershell": "Especialidad: PowerShell (automatización y CI/CD). Sin secretos en el script, sin Invoke-Expression "
+                  "con entrada no validada, TLS 1.2+ con validación de certificado, sin comandos codificados en base64.",
+    "dockerfile": "Especialidad: Docker (contenedores). Imagen base pineada por digest, proceso no root, sin secretos en "
+                  "ENV/ARG, contexto mínimo con .dockerignore, HEALTHCHECK declarado, apt-get con limpieza.",
+    "tests": "Especialidad: pruebas automatizadas. Aserciones reales, sin esperas fijas, reloj inyectable, sin tocar "
+             "bases reales, sin secretos hardcodeados, sin métodos vacíos.",
 }
 # Lenguajes con pocos detectores: el especialista revisa el archivo completo aunque no haya pendientes.
-REVISION_SEMANTICA = frozenset({"razor", "javascript", "yaml", "xml", "kotlin", "swift"})
+REVISION_SEMANTICA = frozenset({"razor", "javascript", "yaml", "xml", "kotlin", "swift",
+                                "powershell", "dockerfile", "tests"})
 
 PERMITIDAS = ("leer_lineas", "obtener_regla", "buscar_estandar", "proponer_parche",
               "marcar_revision_manual", "reportar_hallazgo")

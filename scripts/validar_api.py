@@ -83,8 +83,8 @@ def main() -> int:
         return resumen()
     comprobar(status == 200 and json.loads(cuerpo)["reglas"] == 170, "GET /health: 170 reglas cargadas")
     info = json.loads(pedir(base + "/v1/info")[2])
-    comprobar(len(info["extensiones"]) == 20, f"GET /v1/info: {len(info['extensiones'])} extensiones aceptadas",
-              "se esperaban 20")
+    comprobar(len(info["extensiones"]) == 24, f"GET /v1/info: {len(info['extensiones'])} extensiones aceptadas",
+              "se esperaban 24")
     print(f"       modelo del servidor: {info['modelo']}")
     status, tipo, html = pedir(base + "/")
     comprobar(status == 200 and b"/app.js" in html, "GET /: la página web se sirve")

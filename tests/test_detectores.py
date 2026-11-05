@@ -28,7 +28,10 @@ def test_cada_detector_cita_reglas_que_existen():
     ("C:\\src\\App.config", "config"), ("Index.cshtml", "razor"), ("Lista.razor", "razor"), ("app.js", "javascript"),
     ("openapi.yaml", "yaml"), ("azure-pipelines.yml", "yaml"), ("Textos.resx", "xml"), ("AndroidManifest.xml", "xml"),
     ("Info.plist", "xml"), ("Login.kt", "kotlin"), ("build.gradle.kts", "kotlin"), ("build.gradle", "kotlin"),
-    ("Login.swift", "swift"), ("main.py", None), ("estilos.scss", None)])
+    ("Login.swift", "swift"), ("deploy.ps1", "powershell"), ("mod.psm1", "powershell"),
+    ("Dockerfile", "dockerfile"), ("app.dockerfile", "dockerfile"),
+    ("FooTests.cs", "tests"), ("foo.test.ts", "tests"),
+    ("main.py", None), ("estilos.scss", None)])
 def test_lenguaje_por_extension(nombre, lenguaje):
     assert detectar_lenguaje(nombre) == lenguaje
 

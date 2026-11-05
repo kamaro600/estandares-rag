@@ -19,7 +19,7 @@ from starlette.routing import Route
 from agente import catalogo, config, metricas, rag
 from agente.config import Settings
 from agente.contexto import Contexto
-from agente.detectores import EXTENSIONES, cargar_detectores
+from agente.detectores import EXTENSIONES, LENGUAJES, cargar_detectores
 from agente.llm import crear_llm
 from agente.reporte import a_dict
 from agente.supervisor import Supervisor
@@ -38,6 +38,8 @@ FAMILIAS = (
     ("Escritorio", "WPF y WinForms", (".cs", ".xaml", ".resx", ".config")),
     ("Móvil", ".NET MAUI, Android e iOS", (".xaml", ".kt", ".kts", ".gradle", ".swift", ".xml", ".plist")),
     ("Pipelines", "Azure DevOps y similares", (".yml", ".yaml")),
+    ("Automatización", "PowerShell", (".ps1", ".psm1", ".psd1")),
+    ("Contenedores", "Docker", (".dockerfile",)),
 )
 CABECERAS_WEB = {"Content-Security-Policy": "default-src 'self'; frame-ancestors 'none'; base-uri 'none'",
                  "X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer"}
@@ -197,5 +199,5 @@ def crear_app(settings: Settings | None = None) -> Starlette:
     app.state.settings = settings
     app.state.llm = crear_llm(settings)
     app.state.revisiones, app.state.candado = OrderedDict(), threading.Lock()
-    metricas.inicializar_series(tuple(sorted(set(EXTENSIONES.values()))))
+    metricas.inicializar_series(tuple(sorted(LENGUAJES)))
     return app

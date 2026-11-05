@@ -21,16 +21,41 @@ EXTENSIONES = {
     ".yml": "yaml", ".yaml": "yaml",                           # API-DIS-005 (OpenAPI 3), pipelines
     ".kt": "kotlin", ".kts": "kotlin", ".gradle": "kotlin",    # Android (Kotlin) · EST-SEG-001 cap. 11
     ".swift": "swift",                                         # iOS (Swift) · EST-SEG-001 cap. 11
+    ".ps1": "powershell", ".psm1": "powershell", ".psd1": "powershell",  # PowerShell (secretos, Invoke-Expression…)
+    ".dockerfile": "dockerfile",                               # Dockerfile (imagen base, USER, secretos…)
 }
 # Archivos que solo existen en una app móvil: se evalúan con las reglas de Móvil aunque la revisión sea web.
 ARCHIVOS_MOVILES = ("androidmanifest.xml", "network_security_config.xml", "info.plist")
 LENGUAJES_MOVILES = ("kotlin", "swift")
 
 
+_TEST_NOMBRES = (
+    "tests.cs", "test.cs", "spec.cs",          # C#: FooTests.cs
+    ".test.ts", ".spec.ts", ".test.js", ".spec.js",  # TS/JS: foo.test.ts
+    "test_", "_test.py",                        # Python: test_foo.py / foo_test.py
+)
+
+
+def _es_test(nombre: str) -> bool:
+    n = nombre.replace("\\", "/").rsplit("/", 1)[-1].lower()
+    return (n.endswith("tests.cs") or n.endswith("test.cs") or n.endswith("spec.cs")
+            or ".test." in n or ".spec." in n
+            or n.startswith("test_") or n.endswith("_test.py") or n.endswith("_test.go"))
+
+
+# Conjunto cerrado de lenguajes conocidos (incluye pseudo-lenguajes sin extensión propia, como "tests").
+LENGUAJES = sorted(set(EXTENSIONES.values()) | {"tests"})
+
+
 def detectar_lenguaje(nombre: str) -> str | None:
     p = PurePath(nombre.replace("\\", "/"))
     if p.name.lower().endswith(".xaml.cs"):
         return "csharp"
+    base = p.name.lower()
+    if base == "dockerfile" or base.endswith(".dockerfile"):
+        return "dockerfile"
+    if _es_test(nombre):
+        return "tests"
     return EXTENSIONES.get(p.suffix.lower())
 
 
@@ -96,6 +121,8 @@ _COMENTARIO = {
     "tsql": re.compile(r"^\s*--"), "xaml": re.compile(r"^\s*<!--"), "html": re.compile(r"^\s*<!--"),
     "xml": re.compile(r"^\s*<!--"), "config": re.compile(r"^\s*(//|<!--)"),
     "razor": re.compile(r"^\s*(@\*|<!--|//)"), "yaml": re.compile(r"^\s*#"),
+    "powershell": re.compile(r"^\s*#"), "dockerfile": re.compile(r"^\s*#"),
+    "tests": _C,
 }
 
 
@@ -126,10 +153,12 @@ def codigo_de(lenguaje: str, linea: str) -> str:
     """La línea sin comentarios: el agente no debe 'corregir' comentando el código."""
     if es_comentario(lenguaje, linea):
         return ""
-    if lenguaje in ("csharp", "typescript", "javascript", "kotlin", "swift"):
+    if lenguaje in ("csharp", "typescript", "javascript", "kotlin", "swift", "tests"):
         return _sin_comentario_final(linea)
     if lenguaje == "tsql":
         return linea.split("--", 1)[0]
+    if lenguaje in ("powershell", "dockerfile"):
+        return linea.split("#", 1)[0]
     return linea
 
 
@@ -159,7 +188,10 @@ def _hallazgo(archivo: Archivo, ctx: Contexto, n: int, codigo: str, reglas: tupl
 
 def cargar_detectores() -> list[Patron]:
     """Importar cada módulo registra sus patrones (se hace al primer uso, no al importar el paquete)."""
-    from agente.detectores import csharp, movil, tsql, typescript, web, xaml_config  # noqa: F401, PLC0415
+    from agente.detectores import (  # noqa: F401, PLC0415
+        csharp, movil, tsql, typescript, web, xaml_config,
+        powershell, dockerfile, tests,
+    )
     return PATRONES
 
 

@@ -202,6 +202,28 @@ registrar(
     Patron("CS-HUNGARA", CS, ("WEB-NET-001",),
            re.compile(r"\b(string|int|bool|object|decimal)\s+(str|int|bln|bool|obj|dec)[A-Z]\w*"),
            "Notación húngara (strNombre): está prohibida."),
+    # --- Entity Framework Core (EST-WEB/EST-API: acceso a datos) ---
+    Patron("EF-SAVE-EN-BUCLE", CS, ("WEB-BD-012", "API-NET-001"),
+           re.compile(r"\b(for|foreach|while)\b[^{]*\{[^}]*\bSaveChanges(Async)?\s*\("),
+           "SaveChanges dentro de un bucle: acumula cambios y guarda una vez fuera del bucle.",
+           confianza="media"),
+    Patron("EF-ENSURE-CREATED", CS, ("WEB-BD-012",),
+           re.compile(r"\bEnsureCreated(Async)?\s*\("),
+           "EnsureCreated crea el esquema sin migraciones: usa Migrate() / migraciones versionadas."),
+    Patron("EF-LAZY-LOADING", CS, ("WEB-BD-009", "API-NET-001"),
+           re.compile(r"\.UseLazyLoadingProxies\s*\("),
+           "Lazy loading activado: provoca N+1; proyecta con Select o usa Include explícito."),
+    Patron("EF-RAW-SQL", CS, ("SEG-INY-001", "WEB-BD-010"),
+           re.compile(r"\b(FromSqlRaw|ExecuteSqlRaw|ExecuteSqlRawAsync|SqlQueryRaw)\s*\([^;]*(\+|\$\")"),
+           "SQL crudo con concatenación/interpolación en EF: usa FromSql/FromSqlInterpolated (parametrizado)."),
+    Patron("EF-MIGRATION-DROP", CS, ("WEB-BD-003",),
+           re.compile(r"\b(DropColumn|DropTable|DropIndex)\s*\("),
+           "Migración que elimina columna/tabla/índice: revisa pérdida de datos y haz respaldo previo.",
+           confianza="media"),
+    Patron("EF-TRACKING-EN-LECTURA", CS, ("WEB-BD-009",),
+           re.compile(r"\.ToList(Async)?\s*\(\s*\)\s*;"),
+           "Consulta de lectura sin AsNoTracking(): añade AsNoTracking() si no vas a modificar las entidades.",
+           confianza="baja"),
 )
 
 
