@@ -197,10 +197,6 @@ Los valores calibrados son el defecto en `agente/config.py` (`RAG_MIN_SCORE_POR_
 6. **Revisión desde el chat** (3 min). Pegar código con `.Result` y SQL concatenado. Mostrar veredicto, hallazgos con su regla, parches que pasaron la guarda; aprobar uno y descargar el archivo corregido. Abrir la traza: `router → plan → análisis → llm → herramientas → veredicto`.
 7. **Observabilidad** (1 min). `/metrics` (o Grafana): mensajes por ruta, abstenciones, citas inválidas, costo y rechazos de la guarda.
 
-## Interfaz
-
-La página usa el mismo diseño que `estandares-chat-demo1`: barra superior con el estado (reglas, modelo y embeddings), cabecera roja con las pestañas **Chat** y **Revisar archivos**, panel lateral con el contexto de la revisión (tipo de aplicación y base de datos), los estándares vigentes con su versión y número de reglas, y el chat con sugerencias, citas desplegables y aprobación de correcciones. En pantallas angostas el panel lateral se abre con el botón de menú. No descarga fuentes ni scripts de terceros (la política de seguridad de contenido solo permite el propio servidor).
-
 ## Estructura
 
 ```text
