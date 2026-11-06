@@ -1,79 +1,122 @@
-"""C2 y C3: índice persistente con dimensión verificada, recuperación con umbral, filtros y recuperación exacta."""
+"""C2/C3: búsqueda exacta por id y por similitud, umbral, índice coherente con los embeddings, enmascarado y
+secciones que resuelven conflictos entre estándares."""
 import json
+from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
-from app.embeddings import HashEmbedder
-from app.rag import RAG, IndiceError
+from agente import embeddings, rag
+
+ORO = json.loads((Path(__file__).parent.parent / "eval" / "rag_oro.json").read_text(encoding="utf-8"))
 
 
-def test_dimension_y_embedder_se_verifican_al_iniciar(indice, tmp_path):
-    class OtraDimension(HashEmbedder):
+def test_identificador_citado_se_trae_exacto():
+    res = rag.buscar("¿qué exige SEG-CRI-002 y WEB-BD-005?")
+    assert [r.regla.id for r in res[:2]] == ["SEG-CRI-002", "WEB-BD-005"]
+    assert res[0].via == "id" and res[0].score == 1.0
+
+
+def test_hit_at_4_sobre_el_conjunto_de_oro():
+    """Piso de regresión con embeddings hash (léxicos, sin red). La calidad real, con OpenAI: python -m eval.eval_rag"""
+    aciertos = sum(bool({c["esperado"], *c.get("alternativos", [])} & {r.regla.id for r in rag.buscar(c["pregunta"], k=4, min_score=0)})
+                   for c in ORO["con_respuesta"])
+    assert aciertos / len(ORO["con_respuesta"]) >= 0.80
+
+
+def test_filtro_por_tipo_de_aplicacion():
+    for r in rag.buscar("almacenamiento seguro de tokens en el dispositivo", aplica_a="movil", min_score=0):
+        assert "movil" in r.regla.aplica_a
+
+
+def test_el_umbral_se_lee_del_entorno(monkeypatch):
+    monkeypatch.setenv("RAG_MIN_SCORE", "0,99")
+    assert rag.buscar("receta de ceviche") == []
+
+
+def test_indice_y_consulta_con_embeddings_distintos_se_detiene(monkeypatch):
+    monkeypatch.setenv("EMBEDDINGS_PROVIDER", "openai")     # el índice de las pruebas es hash
+    monkeypatch.setenv("OPENAI_API_KEY", "clave-de-prueba")
+    with pytest.raises(RuntimeError, match="agente.ingesta"):
+        rag.buscar("validación de entradas")
+
+
+def test_embeddings_openai_normalizados_y_en_orden(monkeypatch):
+    class _Cliente:
         def __init__(self):
-            super().__init__(512)
-            self.nombre = "hash-1024"                        # mismo nombre, otra dimensión
-    with pytest.raises(IndiceError, match="dimensiones"):
-        RAG(indice, OtraDimension(), 0.2, 5)
-    with pytest.raises(IndiceError, match="no son comparables"):
-        RAG(indice, HashEmbedder(dim=512), 0.2, 5)
-    with pytest.raises(IndiceError, match="python -m app.ingesta"):
-        RAG(tmp_path / "no-existe.npz", HashEmbedder(), 0.2, 5)
+            self.embeddings = self
+
+        def create(self, model, input):
+            datos = [SimpleNamespace(index=i, embedding=[3.0 * (i + 1), 4.0 * (i + 1)]) for i in range(len(input))]
+            return SimpleNamespace(data=list(reversed(datos)))     # la API no garantiza el orden
+    monkeypatch.setenv("EMBEDDINGS_PROVIDER", "openai")
+    monkeypatch.setenv("OPENAI_EMBEDDING_MODEL", "modelo-de-prueba")   # dimensión desconocida: no se verifica
+    monkeypatch.setattr(embeddings, "_cliente_openai", _Cliente)
+    m = embeddings.vectorizar(["a", "b"])
+    assert m.shape == (2, 2) and np.allclose(np.linalg.norm(m, axis=1), 1) and np.allclose(m[0], [0.6, 0.8])
 
 
-def test_indice_corrupto_se_detecta(indice, tmp_path):
-    with np.load(indice) as z:
-        datos = {k: z[k] for k in z.files}
-    datos["vectores"] = datos["vectores"][:-1]
-    np.savez(tmp_path / "roto.npz", **datos)
-    with pytest.raises(IndiceError, match="corrupto"):
-        RAG(tmp_path / "roto.npz", HashEmbedder(), 0.2, 5)
+def test_embeddings_con_dimension_inesperada_se_detienen(monkeypatch):
+    """text-embedding-3-small debe devolver 1536 dimensiones: otra cosa es un error, no un índice silenciosamente roto."""
+    class _Cliente:
+        def __init__(self):
+            self.embeddings = self
+
+        def create(self, model, input):
+            return SimpleNamespace(data=[SimpleNamespace(index=0, embedding=[1.0, 0.0])])
+    monkeypatch.setenv("EMBEDDINGS_PROVIDER", "openai")
+    monkeypatch.setattr(embeddings, "_cliente_openai", _Cliente)
+    with pytest.raises(embeddings.EmbeddingError, match="1536"):
+        embeddings.vectorizar(["a"])
 
 
-@pytest.mark.parametrize("pregunta, esperada", [
-    ("¿Qué atributos deben tener las cookies de sesión?", "SEG-AUT-005"),
-    ("¿Cómo se versionan las APIs?", "API-VER-001"),
-    ("¿Qué prefijo usan los procedimientos almacenados?", "WEB-BD-005"),
-    ("¿Está permitido usar BinaryFormatter?", "SEG-INY-005"),
-])
-def test_recupera_la_regla_correcta(rag, pregunta, esperada):
-    assert esperada in [f.id for f in rag.buscar(pregunta)]
+def test_hacia_openai_sale_el_texto_enmascarado(monkeypatch):
+    enviados = []
+
+    class _Cliente:
+        def __init__(self):
+            self.embeddings = self
+
+        def create(self, model, input):
+            enviados.extend(input)
+            return SimpleNamespace(data=[SimpleNamespace(index=i, embedding=[1.0] + [0.0] * 1535) for i in range(len(input))])
+    monkeypatch.setenv("EMBEDDINGS_PROVIDER", "openai")
+    monkeypatch.setattr(embeddings, "_cliente_openai", _Cliente)
+    embeddings.vectorizar(['cadena "Server=x;Password=Clave123" del cliente con DNI 45678912'])
+    assert "Clave123" not in enviados[0] and "45678912" not in enviados[0]
 
 
-def test_umbral_produce_abstencion_fuera_del_corpus(rag):
-    for pregunta in ("¿Cuál es la capital de Francia?", "Dame una receta de ceviche de pescado",
-                     "¿Quién ganó el mundial de fútbol de 2018?"):
-        assert rag.buscar(pregunta) == [], pregunta
+def test_el_chat_encuentra_secciones_generales():
+    """La sección "Relación con otros estándares" dice qué prevalece: el chat la puede recuperar, el agente no."""
+    ids = [r.regla.id for r in rag.buscar("relación con otros estándares: cuál prevalece en nomenclatura de base de datos",
+                                          k=5, min_score=0, incluir_secciones=True)]
+    assert any(i.startswith("EST-WEB-001-S") for i in ids)
+    assert not any("-S" in r.regla.id for r in rag.buscar("relación con otros estándares", k=5, min_score=0))
 
 
-def test_filtro_por_categoria(rag):
-    res = rag.buscar("¿Cómo se nombran las tablas?", categorias=["escritorio"])
-    assert res and {f.categoria for f in res} == {"escritorio"}
+def _res(*ids):
+    from agente import catalogo
+    reglas = catalogo.cargar()
+    return [rag.Resultado(reglas[i], 0.6, "similitud") for i in ids]
 
 
-def test_id_mencionado_se_trae_exacto_y_primero(rag):
-    res = rag.buscar("¿Qué dice la regla WEB-BD-005?")
-    assert res[0].id == "WEB-BD-005" and res[0].score == 1.0
+def test_reglas_del_mismo_tema_en_dos_estandares_traen_lo_que_decide_cual_aplica():
+    """WEB-BD-002 y DSK-BD-001 se contradicen: se agregan el capítulo y la relación con otros estándares de ambos."""
+    from agente import catalogo
+    extra = rag.complementos(_res("WEB-BD-002", "DSK-BD-001", "WEB-BD-003"), catalogo.secciones())
+    ids = [r.regla.id for r in extra]
+    assert {"EST-WEB-001-S10", "EST-WEB-001-S07", "EST-DSK-001-S09", "EST-DSK-001-S06"} == set(ids)
+    assert all(r.via == "relacion" for r in extra) and len(ids) <= rag.MAX_COMPLEMENTOS
 
 
-def test_por_id_y_relacionadas(rag):
-    f = rag.por_id("WEB-BD-010")
-    assert f.doc_codigo == "EST-WEB-001" and f.nivel == "Obligatorio" and "EST-WEB-001 v3.0" in f.cita()
-    assert rag.por_id("NO-EXISTE-1") is None
-    assert "SEG-INY-001" in [r.id for r in rag.relacionadas([f])]           # "ver SEG-INY-001" en su texto
+def test_sin_conflicto_no_se_agregan_secciones():
+    from agente import catalogo
+    generales = catalogo.secciones()
+    assert rag.complementos(_res("WEB-ANG-005", "SEG-AUT-005"), generales) == []   # temas distintos
+    assert rag.complementos(_res("WEB-BD-002", "WEB-BD-005"), generales) == []     # un solo estándar
 
 
-def test_set_de_oro_referencia_reglas_existentes(rag):
-    from eval.evaluar import EVAL
-    gold = json.loads((EVAL / "gold.json").read_text(encoding="utf-8"))
-    ids = {f.id for f in rag.fragmentos}
-    faltan = [e for g in gold["respondibles"] for e in g["esperados"] if e not in ids]
-    assert not faltan
-
-
-def test_calidad_minima_de_recuperacion_con_embedder_hash(rag):
-    """Piso de regresión con el embedder léxico (sin red). Con OpenAI se mide con: python -m eval.evaluar"""
-    from eval.evaluar import evaluar_rag
-    r = evaluar_rag(rag, 5)
-    assert r["umbral_actual"]["hit@5"] >= 0.70
-    assert r["umbral_actual"]["abstencion"] >= 0.5
+def test_el_agente_no_recibe_complementos():
+    ids = [r.regla.id for r in rag.buscar("WEB-BD-002 DSK-BD-001 nombre de tablas", k=5, min_score=0)]
+    assert not any("-S" in i for i in ids)

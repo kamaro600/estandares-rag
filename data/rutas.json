@@ -20,13 +20,13 @@
       "¿Qué cabeceras de seguridad debe enviar un sitio web?"
     ]
   },
-  "validar_codigo": {
-    "descripcion": "El usuario pide revisar o validar un fragmento de código contra los estándares.",
+  "revisar_codigo": {
+    "descripcion": "El usuario pide revisar, validar o corregir un fragmento de código contra los estándares.",
     "ejemplos": [
-      "Valida este código contra el estándar",
+      "Revisa este código contra el estándar",
       "¿Este código cumple los estándares de la empresa?",
       "Revisa este procedimiento almacenado",
-      "Revisa mi controlador de ASP.NET Core",
+      "Corrige mi controlador de ASP.NET Core",
       "¿Qué está mal en este componente de Angular?",
       "Analiza este script SQL y dime qué reglas incumple",
       "Haz una revisión de seguridad de este método",
@@ -36,7 +36,7 @@
     ]
   },
   "fuera_de_alcance": {
-    "descripcion": "Cualquier cosa que no sea sobre estándares de desarrollo de software de la empresa.",
+    "descripcion": "Cualquier cosa que no sea sobre los estándares de desarrollo de software de la empresa.",
     "ejemplos": [
       "¿A qué hora es el almuerzo?",
       "¿Cuál es la capital de Francia?",

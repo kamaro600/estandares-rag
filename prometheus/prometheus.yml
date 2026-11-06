@@ -1,8 +1,11 @@
 global:
-  scrape_interval: 10s
+  scrape_interval: 15s
+  evaluation_interval: 30s
+
 rule_files:
   - /etc/prometheus/alertas.yml
+
 scrape_configs:
-  - job_name: estandares
+  - job_name: agente-estandares
     static_configs:
-      - targets: ["host.docker.internal:8000"]   # la app corre en tu equipo (HOST=0.0.0.0), fuera de Docker
+      - targets: ["agente:8000"]

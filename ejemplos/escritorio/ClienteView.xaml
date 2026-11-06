@@ -1,0 +1,7 @@
+<UserControl x:Class="Ventas.Desktop.Vistas.ClienteView">
+  <StackPanel>
+    <TextBox x:Name="nombre" Text="{Binding Nombre}" />
+    <TextBox x:Name="txtDocumento" Text="{Binding Documento}" />
+    <Button x:Name="guardar" Content="Guardar cliente" Click="btnGuardar_Click" />
+  </StackPanel>
+</UserControl>

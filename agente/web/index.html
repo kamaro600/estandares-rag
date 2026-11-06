@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asistente de Estándares</title>
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="util"><div class="in">
+  <span class="area">Gerencia de Arquitectura y Desarrollo de Software</span>
+  <span class="sp"></span>
+  <span class="pill"><span class="punto-estado" id="ptEstado"></span><span id="estado">conectando…</span></span>
+  <a href="http://localhost:3000" target="_blank" rel="noopener">Monitoreo</a>
+</div></div>
+
+<header class="cabecera"><div class="in">
+  <button class="btn-ico" id="btnMenu" type="button" aria-label="Abrir panel lateral">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <div class="marca" aria-hidden="true">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+  </div>
+  <div class="titulo"><h1>Asistente de Estándares de Desarrollo</h1><p>Consulta las normas de seguridad, web, APIs, escritorio y base de datos · revisa y corrige tu código</p></div>
+  <span class="sp"></span>
+  <nav class="pestanas" aria-label="Vistas">
+    <button type="button" class="pestana" id="tabChat" aria-pressed="true">Chat</button>
+    <button type="button" class="pestana" id="tabRevisar" aria-pressed="false">Revisar archivos</button>
+  </nav>
+  <button class="btn-cab" id="btnNuevaConv" type="button">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    <span>Nueva conversación</span>
+  </button>
+</div></header>
+
+<!-- ============ Chat: preguntas con citas y código para el agente ============ -->
+<div class="app" id="vistaChat">
+  <aside id="lateral">
+    <section class="card pad">
+      <h2>Contexto de la revisión</h2>
+      <div class="campos">
+        <label>Tipo de aplicación
+          <select id="chatTipo"><option value="web">Web</option><option value="api">API</option><option value="escritorio">Escritorio</option><option value="movil">Móvil</option></select>
+        </label>
+        <label>Base de datos
+          <select id="chatBd"><option value="nueva">Nueva</option><option value="legada">Existente</option></select>
+        </label>
+      </div>
+      <p class="ayuda">Decide qué reglas aplica el agente al código que pegues (por ejemplo, la nomenclatura de una base existente).</p>
+    </section>
+    <section class="card pad">
+      <h2>Estándares vigentes</h2>
+      <div id="docs"><p class="ayuda">Cargando…</p></div>
+    </section>
+    <section class="card pad">
+      <h2>Cómo usarlo</h2>
+      <ul class="ayuda">
+        <li>Pregunta en lenguaje natural: <i>"¿cómo nombro un procedimiento?"</i></li>
+        <li>Pega código entre <code>```</code> para revisarlo. Ponle nombre con <code>// archivo: Clientes.cs</code> en la primera línea.</li>
+        <li>Cada corrección la apruebas tú; tus archivos nunca se modifican.</li>
+      </ul>
+    </section>
+  </aside>
+
+  <section class="card panel">
+    <main id="scroll"><div class="chat" id="conversacion" aria-live="polite"></div></main>
+    <form class="redactar" id="formChat">
+      <div class="caja">
+        <textarea id="txtChat" rows="1" maxlength="20000" spellcheck="false" aria-label="Mensaje"
+          placeholder="Escribe tu pregunta o pega el código a revisar…"></textarea>
+        <button type="submit" class="enviar" id="btnEnviar" aria-label="Enviar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="pista-chat"><span><kbd>Ctrl</kbd> + <kbd>Enter</kbd> envía</span><span>Las respuestas citan la regla, el documento y la página</span></div>
+    </form>
+  </section>
+</div>
+
+<main class="contenido" id="vistaRevisar" hidden>
+  <ol class="pasos" id="pasos" aria-label="Progreso" hidden>
+    <li id="paso1" class="activo" aria-current="step">Adjuntar</li>
+    <li id="paso2">Revisar</li>
+    <li id="paso3">Aprobar y descargar</li>
+  </ol>
+
+  <!-- ============ 1. Adjuntar ============ -->
+  <section id="vistaCarga">
+    <div class="intro">
+      <h1>Revisa tu código contra los estándares de la empresa</h1>
+      <p>Cada incumplimiento llega con su regla y la página del documento que la define. Las correcciones solo se aplican si tú las apruebas, y tus archivos nunca se modifican.</p>
+    </div>
+
+    <div class="carga">
+      <div class="zona" id="zona" role="button" tabindex="0" aria-label="Adjuntar archivos: suelta aquí o pulsa Enter para elegirlos">
+        <svg class="zona-icono" viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M14 34h-3a8 8 0 0 1-1-15.9A12 12 0 0 1 33.3 15 9.5 9.5 0 0 1 37 34h-3"/>
+          <path d="m18 27 6-6 6 6M24 21v17"/>
+        </svg>
+        <p class="zona-titulo">Suelta aquí tus archivos o una carpeta completa</p>
+        <div class="botones">
+          <button type="button" class="btn primario" id="btnArchivos">Elegir archivos</button>
+          <button type="button" class="btn" id="btnCarpeta">Elegir carpeta</button>
+          <button type="button" class="btn fantasma" id="btnPegar">Pegar código</button>
+        </div>
+        <p class="tenue" id="limites"></p>
+        <input type="file" id="inArchivos" multiple hidden>
+        <input type="file" id="inCarpeta" webkitdirectory multiple hidden>
+      </div>
+
+      <aside class="formatos" aria-labelledby="tituloFormatos">
+        <h2 id="tituloFormatos">Qué puedes adjuntar</h2>
+        <p class="tenue">El alcance de EST-SEG-001 §2. Los archivos móviles se evalúan siempre con las reglas de Móvil.</p>
+        <dl id="familias"></dl>
+        <p class="tenue nota">Las carpetas <code>node_modules</code>, <code>bin</code>, <code>obj</code>, <code>.git</code> y <code>dist</code> se saltan solas.</p>
+      </aside>
+    </div>
+
+    <form class="pegar" id="formPegar" hidden>
+      <label for="pegarNombre">Nombre del archivo, con su extensión</label>
+      <input id="pegarNombre" placeholder="Controllers/ClientesController.cs" autocomplete="off" required>
+      <label for="pegarCodigo">Código</label>
+      <textarea id="pegarCodigo" rows="10" spellcheck="false" required></textarea>
+      <div class="botones-izq">
+        <button type="submit" class="btn primario">Agregar a la lista</button>
+        <button type="button" class="btn fantasma" id="btnCancelarPegar">Cancelar</button>
+        <span class="tenue" id="pegarAviso"></span>
+      </div>
+    </form>
+
+    <section class="seleccion" id="seleccion" hidden aria-labelledby="tituloSeleccion">
+      <div class="cabecera-fila">
+        <h2 id="tituloSeleccion">Archivos listos</h2>
+        <button type="button" class="btn fantasma chico" id="btnVaciar">Quitar todos</button>
+      </div>
+      <ul class="lista" id="lista"></ul>
+      <div id="ignorados"></div>
+
+      <div class="opciones">
+        <fieldset class="segmentado" id="tipoApp">
+          <legend>Tipo de aplicación</legend>
+          <div class="segmentos">
+            <label><input type="radio" name="tipo" value="web" checked><span>Web</span></label>
+            <label><input type="radio" name="tipo" value="api"><span>API</span></label>
+            <label><input type="radio" name="tipo" value="escritorio"><span>Escritorio</span></label>
+            <label><input type="radio" name="tipo" value="movil"><span>Móvil</span></label>
+          </div>
+          <p class="ayuda" id="ayudaTipo">Una aplicación web incluye las reglas de su API.</p>
+        </fieldset>
+        <fieldset class="segmentado" id="modoBd">
+          <legend>Base de datos</legend>
+          <div class="segmentos">
+            <label><input type="radio" name="bd" value="nueva" checked><span>Nueva</span></label>
+            <label><input type="radio" name="bd" value="legada"><span>Existente</span></label>
+          </div>
+          <p class="ayuda" id="ayudaBd">Nomenclatura de EST-WEB-001 (esquemas, PascalCase).</p>
+        </fieldset>
+        <label class="interruptor">
+          <input type="checkbox" id="usarLlm" checked>
+          <span class="pista" aria-hidden="true"></span>
+          <span><b>Usar el especialista</b><br><span class="tenue" id="ayudaLlm">El modelo propone correcciones y revisa lo que los detectores no ven.</span></span>
+        </label>
+      </div>
+
+      <div class="accion-principal">
+        <button type="button" class="btn primario grande" id="btnRevisar" disabled>Revisar</button>
+        <p id="progreso" class="progreso" aria-live="polite"></p>
+      </div>
+    </section>
+  </section>
+
+  <!-- ============ 2 y 3. Revisar, aprobar y descargar ============ -->
+  <section id="vistaRevision" hidden>
+    <div id="veredicto"></div>
+    <div id="final" class="final"></div>
+    <div class="mesa">
+      <nav class="rail" id="rail" aria-label="Archivos revisados"></nav>
+      <div class="detalle" id="detalle" tabindex="-1"></div>
+    </div>
+  </section>
+</main>
+
+<div class="barra-aprobar" id="barraAprobar" hidden>
+  <p id="cuenta"></p>
+  <div class="botones-izq">
+    <button type="button" class="btn fantasma chico" id="btnTodos">Aprobar todos</button>
+    <button type="button" class="btn fantasma chico" id="btnNinguno">Quitar aprobaciones</button>
+    <button type="button" class="btn primario" id="btnAplicar">Aplicar los aprobados</button>
+  </div>
+</div>
+
+<div class="avisos" id="avisos" aria-live="assertive"></div>
+
+<dialog id="dlgRegla" aria-labelledby="reglaTitulo">
+  <form method="dialog"><button class="cerrar" aria-label="Cerrar">×</button></form>
+  <div id="regla"></div>
+</dialog>
+
+<script src="/app.js"></script>
+</body>
+</html>

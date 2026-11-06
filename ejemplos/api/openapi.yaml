@@ -1,0 +1,20 @@
+openapi: 3.0.3
+info:
+  title: API de Clientes
+  version: 1.0.0
+servers:
+  - url: http://api.empresa.pe/api/v1
+paths:
+  /clientes:
+    get:
+      summary: Lista los clientes
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: No autenticado
+  /obtenerCliente/{id}:
+    get:
+      responses:
+        '200':
+          description: OK

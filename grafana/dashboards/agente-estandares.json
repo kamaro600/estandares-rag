@@ -1,0 +1,738 @@
+{
+ "uid": "lab07-agente",
+ "title": "Lab 07 · Agente corrector de estándares",
+ "schemaVersion": 39,
+ "time": {
+  "from": "now-1h",
+  "to": "now"
+ },
+ "refresh": "10s",
+ "panels": [
+  {
+   "id": 1,
+   "title": "Revisiones por veredicto (1 h)",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 0
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (veredicto) (increase(lab07_revisiones_total[1h]))",
+     "legendFormat": "{{veredicto}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 2,
+   "title": "Hallazgos por severidad / min",
+   "type": "timeseries",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 0
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (severidad) (rate(lab07_hallazgos_total[5m])) * 60",
+     "legendFormat": "{{severidad}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 3,
+   "title": "Hallazgos por lenguaje (1 h)",
+   "type": "barchart",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 0
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (lenguaje) (increase(lab07_hallazgos_total[1h]))",
+     "legendFormat": "{{lenguaje}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 4,
+   "title": "Parches: aceptados vs. rechazados por las guardas",
+   "type": "timeseries",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (origen, resultado) (rate(lab07_parches_total[5m])) * 60",
+     "legendFormat": "{{origen}} {{resultado}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 5,
+   "title": "Rechazos de la guarda por motivo (1 h)",
+   "type": "barchart",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (motivo) (increase(lab07_guarda_rechazos_total[1h]))",
+     "legendFormat": "{{motivo}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 6,
+   "title": "Tasa de aprobación humana",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(lab07_aprobaciones_total{decision=\"aprobado\"}[1h])) / clamp_min(sum(increase(lab07_aprobaciones_total[1h])), 1)",
+     "legendFormat": "aprobados / decididos",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 7,
+   "title": "Hallazgos derivados a revisión humana (1 h)",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 16
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(lab07_revision_manual_total[1h]))",
+     "legendFormat": "manual",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 8,
+   "title": "Tokens del modelo / min",
+   "type": "timeseries",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 16
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (tipo) (rate(lab07_llm_tokens_total[5m])) * 60",
+     "legendFormat": "{{tipo}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 9,
+   "title": "Duración de la revisión p95 (s)",
+   "type": "timeseries",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 16
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(lab07_revision_segundos_bucket[5m])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 10,
+   "title": "Mensajes del chat por ruta / min",
+   "type": "timeseries",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 24
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (ruta) (rate(lab07_chat_mensajes_total[5m])) * 60",
+     "legendFormat": "{{ruta}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 11,
+   "title": "Tasa de abstención (sin evidencia, sin modelo)",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 24
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(lab07_rag_sin_contexto_total[1h])) / clamp_min(sum(increase(lab07_chat_mensajes_total{ruta=\"consulta_estandar\"}[1h])), 1)",
+     "legendFormat": "abstención",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 12,
+   "title": "Router: decisiones del respaldo (1 h)",
+   "type": "barchart",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 24
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (motivo) (increase(lab07_router_respaldo_total[1h]))",
+     "legendFormat": "{{motivo}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 13,
+   "title": "Citas inválidas del modelo (1 h)",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 32
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(lab07_citas_invalidas_total[1h]))",
+     "legendFormat": "citas inválidas",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 14,
+   "title": "Secciones agregadas por conflicto entre estándares (1 h)",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 32
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(lab07_rag_complementos_total[1h]))",
+     "legendFormat": "secciones",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 15,
+   "title": "Latencia del chat p95 (s)",
+   "type": "timeseries",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 32
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(lab07_chat_segundos_bucket[5m])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 16,
+   "title": "Reformulaciones de seguimiento (1 h)",
+   "type": "barchart",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 40
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (resultado) (increase(lab07_reformulaciones_total[1h]))",
+     "legendFormat": "{{resultado}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 17,
+   "title": "Prompt injection detectado (1 h)",
+   "type": "barchart",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 40
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (origen, accion) (increase(lab07_inyeccion_total[1h]))",
+     "legendFormat": "{{origen}} {{accion}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 18,
+   "title": "Datos enmascarados antes de salir (1 h)",
+   "type": "barchart",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 40
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (tipo) (increase(lab07_datos_enmascarados_total[1h]))",
+     "legendFormat": "{{tipo}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 19,
+   "title": "Rechazos 429 por límite de tasa (1 h)",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 48
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(lab07_limite_tasa_total[1h]))",
+     "legendFormat": "429",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 20,
+   "title": "Latencia del modelo p95 (s)",
+   "type": "timeseries",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 48
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(lab07_llm_segundos_bucket[5m])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 21,
+   "title": "Errores y rechazos del proveedor (1 h)",
+   "type": "barchart",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 48
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (proveedor, tipo) (increase(lab07_llm_errores_total[1h]))",
+     "legendFormat": "{{proveedor}} {{tipo}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 22,
+   "title": "Costo estimado USD (1 h)",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 56
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(lab07_costo_usd_total[1h]))",
+     "legendFormat": "USD",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "currencyUSD"
+    },
+    "overrides": []
+   },
+   "options": {}
+  }
+ ]
+}

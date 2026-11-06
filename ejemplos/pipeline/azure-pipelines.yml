@@ -1,0 +1,15 @@
+trigger:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  sqlPassword: Sup3rSecreta2024
+
+steps:
+  - script: npm ci && npm run build
+    displayName: Compilar Angular
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: build
