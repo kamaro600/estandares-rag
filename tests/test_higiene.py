@@ -1,4 +1,5 @@
 """Reglas de higiene que evitan fallas silenciosas en Windows."""
+import os
 import re
 import subprocess
 import sys
@@ -18,7 +19,11 @@ def test_toda_lectura_y_escritura_declara_encoding():
 
 def test_salida_redirigida_en_utf8_aunque_windows_diga_cp1252():
     """Windows redirige en cp1252: sin consola_segura, '→' hace caer la ingesta y '·' rompe a quien lee UTF-8."""
-    entorno = {"PYTHONIOENCODING": "cp1252", "PATH": "", "SYSTEMROOT": "", "LLM_PROVIDER": "mock"}
+    # Las variables de aislamiento de conftest (simulador, embeddings hash, rutas temporales) viajan al subproceso:
+    # sin ellas leería el .env del desarrollador (que puede decir openai) y escribiría en data/.
+    aislamiento = {k: os.environ[k] for k in ("EMBEDDINGS_PROVIDER", "RAG_MIN_SCORE", "CATALOGO_PATH", "SECCIONES_PATH",
+                                               "INDICE_PATH", "SALIDA_DIR", "DB_PATH", "ANTHROPIC_API_KEY", "OPENAI_API_KEY")}
+    entorno = {"PYTHONIOENCODING": "cp1252", "PATH": "", "SYSTEMROOT": "", "LLM_PROVIDER": "mock", **aislamiento}
     salidas = []
     for comando in (["-m", "agente.ingesta"], ["-m", "agente", "regla", "SEG-AUT-002"],
                     ["-m", "agente", "revisar", "ejemplos/bd/ventas_nueva.sql", "--sin-llm"]):

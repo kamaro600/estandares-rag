@@ -21,6 +21,26 @@ PANELES = [
     ("Tokens del modelo / min", "timeseries", "sum by (tipo) (rate(lab07_llm_tokens_total[5m])) * 60", "{{tipo}}"),
     ("Duración de la revisión p95 (s)", "timeseries",
      "histogram_quantile(0.95, sum by (le) (rate(lab07_revision_segundos_bucket[5m])))", "p95"),
+    # ---- chat: preguntas con citas, router y comunicación con el agente ----
+    ("Mensajes del chat por ruta / min", "timeseries", "sum by (ruta) (rate(lab07_chat_mensajes_total[5m])) * 60", "{{ruta}}"),
+    ("Tasa de abstención (sin evidencia, sin modelo)", "stat",
+     'sum(increase(lab07_rag_sin_contexto_total[1h])) / clamp_min(sum(increase(lab07_chat_mensajes_total{ruta="consulta_estandar"}[1h])), 1)',
+     "abstención"),
+    ("Router: decisiones del respaldo (1 h)", "barchart", "sum by (motivo) (increase(lab07_router_respaldo_total[1h]))", "{{motivo}}"),
+    ("Citas inválidas del modelo (1 h)", "stat", "sum(increase(lab07_citas_invalidas_total[1h]))", "citas inválidas"),
+    ("Secciones agregadas por conflicto entre estándares (1 h)", "stat",
+     "sum(increase(lab07_rag_complementos_total[1h]))", "secciones"),
+    ("Latencia del chat p95 (s)", "timeseries",
+     "histogram_quantile(0.95, sum by (le) (rate(lab07_chat_segundos_bucket[5m])))", "p95"),
+    ("Reformulaciones de seguimiento (1 h)", "barchart", "sum by (resultado) (increase(lab07_reformulaciones_total[1h]))", "{{resultado}}"),
+    # ---- seguridad, privacidad y proveedor de IA ----
+    ("Prompt injection detectado (1 h)", "barchart", "sum by (origen, accion) (increase(lab07_inyeccion_total[1h]))", "{{origen}} {{accion}}"),
+    ("Datos enmascarados antes de salir (1 h)", "barchart", "sum by (tipo) (increase(lab07_datos_enmascarados_total[1h]))", "{{tipo}}"),
+    ("Rechazos 429 por límite de tasa (1 h)", "stat", "sum(increase(lab07_limite_tasa_total[1h]))", "429"),
+    ("Latencia del modelo p95 (s)", "timeseries",
+     "histogram_quantile(0.95, sum by (le) (rate(lab07_llm_segundos_bucket[5m])))", "p95"),
+    ("Errores y rechazos del proveedor (1 h)", "barchart", "sum by (proveedor, tipo) (increase(lab07_llm_errores_total[1h]))", "{{proveedor}} {{tipo}}"),
+    ("Costo estimado USD (1 h)", "stat", "sum(increase(lab07_costo_usd_total[1h]))", "USD"),
 ]
 
 
@@ -30,7 +50,8 @@ def panel(i: int, titulo: str, tipo: str, expr: str, leyenda: str) -> dict:
             "gridPos": {"h": 8, "w": 8, "x": (i % 3) * 8, "y": (i // 3) * 8},
             "targets": [{"refId": "A", "expr": expr, "legendFormat": leyenda,
                          "datasource": {"type": "prometheus", "uid": "prometheus"}}],
-            "fieldConfig": {"defaults": {"unit": "percentunit" if "Tasa" in titulo else "short"}, "overrides": []},
+            "fieldConfig": {"defaults": {"unit": "percentunit" if "Tasa" in titulo else "currencyUSD" if "USD" in titulo
+                                         else "short"}, "overrides": []},
             "options": {}}
 
 

@@ -22,6 +22,7 @@ REGLAS_SECRETO = {"SEG-CRI-003", "SEG-DSK-002"}
 
 @dataclass
 class ResultadoArchivo:
+    """Todo lo que el supervisor sabe de un archivo: hallazgos, parches propuestos, rechazos de la guarda y derivaciones."""
     archivo: Archivo
     hallazgos: list[Hallazgo] = field(default_factory=list)
     semanticos: list[Hallazgo] = field(default_factory=list)
@@ -43,6 +44,7 @@ class Corregido:
 
 @dataclass
 class Revision:
+    """Una revisión completa: el contexto, el resultado de cada archivo y su traza."""
     ctx: Contexto
     resultados: list[ResultadoArchivo]
     tracer: Tracer
@@ -63,12 +65,16 @@ class Revision:
 
 
 class Supervisor:
+    """Orquesta la revisión sin LLM para decidir: plan por extensión, detectores, autofix con guarda,
+    especialista ReAct para lo pendiente y, tras la aprobación humana, escritura en salida/corregido/.
+    """
     def __init__(self, ctx: Contexto, llm: LLM | None, tracer: Tracer | None = None):
         self.ctx, self.llm = ctx, llm
         self.tracer = tracer or Tracer()
 
     # ---------- 1. Plan (determinista: no hace falta un LLM para decidir quién revisa un .cs) ----------
     def planificar(self, entradas: list[tuple[str, str]]) -> list[ResultadoArchivo]:
+        """Asigna cada archivo a su especialista según la extensión, o lo omite (lenguaje desconocido o demasiado grande)."""
         plan = []
         for nombre, contenido in entradas[:config.MAX_ARCHIVOS]:
             a = Archivo(nombre, contenido)
@@ -87,6 +93,7 @@ class Supervisor:
 
     # ---------- 2. Ejecutar cada paso ----------
     def revisar(self, entradas: list[tuple[str, str]], usar_llm: bool = True) -> Revision:
+        """Analiza cada archivo del plan; con usar_llm=False solo hay detectores y correcciones mecánicas."""
         inicio = time.perf_counter()
         resultados = self.planificar(entradas)
         for r in resultados:

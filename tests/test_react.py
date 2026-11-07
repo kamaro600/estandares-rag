@@ -1,3 +1,4 @@
+"""C5: el bucle ReAct respeta el protocolo de herramientas (cada tool_use con su tool_result) y sus límites."""
 from agente import config
 from agente.contexto import Contexto
 from agente.detectores import Archivo, analizar

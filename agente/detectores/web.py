@@ -75,7 +75,6 @@ registrar(
            "Servidor con http://: toda comunicación usa TLS 1.2 o superior."),
 )
 
-METODOS = ("get", "post", "put", "patch", "delete")
 VERBOS = re.compile(r"(^|/|-)(obtener|listar|eliminar|crear|actualizar|buscar|registrar|get|delete|update|create)", I)
 HERRAMIENTAS_DEPENDENCIAS = {"npm": "npm audit", "dotnet": "dotnet list package --vulnerable"}
 ANALISIS_SEGURIDAD = re.compile(r"credscan|gitleaks|trufflehog|detect-secrets|codeql|semgrep|sonar|snyk|"

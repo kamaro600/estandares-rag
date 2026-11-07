@@ -10,7 +10,7 @@ import unicodedata
 
 import numpy as np
 
-from agente import config
+from agente import config, metricas
 
 DIM = 2048
 _PALABRA = re.compile(r"[a-z0-9_]+")
@@ -63,19 +63,46 @@ def descriptor() -> str:
     return f"openai:{st.openai_embedding_model}" if st.embeddings_provider == "openai" else f"hash:{DIM}"
 
 
+# Por qué text-embedding-3-small: multilingüe (los estándares están en español y mezclan términos en inglés como
+# async, CORS o SELECT *), barato (el corpus completo se indexa por centavos) y medido con eval/rag_oro.json.
+DIMENSIONES = {"text-embedding-3-small": 1536, "text-embedding-3-large": 3072, "text-embedding-ada-002": 1536}
+
+
+def dimension() -> int | None:
+    """Dimensión que DEBE tener cada vector del proveedor configurado (None si el modelo no es conocido)."""
+    st = config.Settings()
+    return DIMENSIONES.get(st.openai_embedding_model) if st.embeddings_provider == "openai" else DIM
+
+
+class EmbeddingError(RuntimeError):
+    pass
+
+
 def _cliente_openai():
     # solo se importa si EMBEDDINGS_PROVIDER=openai
     return config.importar_sdk("openai").OpenAI(api_key=config.Settings().openai_api_key, max_retries=2, timeout=60)
 
 
 def vectorizar(textos: list[str]) -> np.ndarray:
-    """Matriz de vectores normalizados con el proveedor configurado (lotes de 100 para OpenAI)."""
+    """Matriz de vectores normalizados con el proveedor configurado (lotes de 100 para OpenAI).
+    Hacia OpenAI sale el texto enmascarado (secretos y datos personales), igual que hacia el LLM."""
+    from agente.privacidad import enmascarar  # noqa: PLC0415  (privacidad importa metricas, que no importa esto)
     st = config.Settings()
     if st.embeddings_provider != "openai":
         return embed_lote(textos)
+    openai = config.importar_sdk("openai")
     cliente, filas = _cliente_openai(), []
     for i in range(0, len(textos), 100):
-        r = cliente.embeddings.create(model=st.openai_embedding_model, input=textos[i:i + 100])
+        try:
+            r = cliente.embeddings.create(model=st.openai_embedding_model,
+                                          input=[enmascarar(t) for t in textos[i:i + 100]])
+        except openai.APIError as e:
+            raise EmbeddingError(f"OpenAI embeddings falló: {type(e).__name__}: {e}") from e
         filas += [d.embedding for d in sorted(r.data, key=lambda d: d.index)]
+        tokens = getattr(getattr(r, "usage", None), "prompt_tokens", 0) or 0
+        metricas.COSTO.inc(tokens * st.precio_embeddings / 1e6, proveedor="openai_embeddings")
     m = np.asarray(filas, dtype=np.float32)
+    esperada = dimension()
+    if esperada and m.shape[1] != esperada:
+        raise EmbeddingError(f"{st.openai_embedding_model} devolvió {m.shape[1]} dimensiones; se esperaban {esperada}")
     return m / np.clip(np.linalg.norm(m, axis=1, keepdims=True), 1e-12, None)

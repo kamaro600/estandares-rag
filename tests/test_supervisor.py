@@ -1,3 +1,4 @@
+"""C5: la revisión completa con el simulador: todo hallazgo atendido, secretos rotados y solo lo aprobado se aplica."""
 from pathlib import Path
 
 import pytest

@@ -1,3 +1,4 @@
+"""C5/C6: las herramientas del especialista no le permiten inventar reglas ni reportar las que no aplican."""
 from agente.contexto import Contexto
 from agente.detectores import Archivo, analizar
 from agente.tools import Sesion, ejecutar

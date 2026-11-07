@@ -74,6 +74,7 @@ def especialista_para(lenguaje: str) -> Especialista:
 
 
 def tarea(archivo: Archivo, pendientes: list[Hallazgo], tipo_app: str, modo_bd: str) -> str:
+    """El mensaje inicial del especialista: hallazgos pendientes y código numerado dentro de <datos_externos>."""
     lineas = archivo.lineas
     if len(lineas) <= MAX_LINEAS_CONTEXTO:
         numeradas = range(1, len(lineas) + 1)

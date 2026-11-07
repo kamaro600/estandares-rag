@@ -9,6 +9,7 @@ ETIQUETA = {"NO_APTO": "NO APTO para pase a producción", "REVISAR": "REQUIERE R
 
 
 def a_dict(rev: Revision) -> dict:
+    """La revisión como JSON (lo que devuelve la API y guarda salida/revision.json)."""
     archivos = []
     for r in rev.resultados:
         archivos.append({
@@ -41,6 +42,7 @@ def a_dict(rev: Revision) -> dict:
 
 
 def a_markdown(rev: Revision) -> str:
+    """El reporte legible para el pull request o el pipeline (salida/reporte.md)."""
     d = a_dict(rev)
     t = d["totales"]
     o = [f"# Revisión de estándares · {ETIQUETA[d['veredicto_inicial']]}", "",

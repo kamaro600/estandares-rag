@@ -43,7 +43,9 @@ def _post(url, cuerpo):
 
 
 def test_salud_y_regla(base):
-    assert json.load(urllib.request.urlopen(base + "/health")) == {"estado": "ok", "reglas": 170}
+    salud = json.load(urllib.request.urlopen(base + "/health"))
+    assert salud["estado"] == "ok" and salud["reglas"] == 200 and salud["secciones"] > 20
+    assert salud["embeddings"] == "hash:2048" and salud["modelo"] == "mock"
     r = json.load(urllib.request.urlopen(base + "/v1/reglas/web-bd-005"))
     assert r["id"] == "WEB-BD-005" and r["cita"].startswith("EST-WEB-001 v3.0 §7.5")
 
@@ -81,7 +83,12 @@ def test_pagina_web_con_cabeceras_de_seguridad(base):
         assert "text/html" in r.headers["Content-Type"] and b"/app.js" in r.read()
         assert "default-src 'self'" in r.headers["Content-Security-Policy"]
     info = json.load(urllib.request.urlopen(base + "/v1/info"))
-    assert info["modelo"] == "mock" and info["reglas"] == 170
+    assert info["modelo"] == "mock" and info["reglas"] == 200
+    assert {d["codigo"]: d["reglas"] for d in info["documentos"]} == {"EST-API-001": 25, "EST-DSK-001": 23, "EST-REF-001": 45,
+                                                                    "EST-SEG-001": 43, "EST-WEB-001": 34,
+                                                                    "EST-BPA-001": 30}
+    archivos = {d["codigo"]: d["archivo"] for d in info["documentos"]}
+    assert archivos["EST-BPA-001"].startswith("EST_BP_") and archivos["EST-API-001"].startswith("EST-API-001_")
     assert {".kt", ".swift", ".cshtml", ".yaml", ".resx"} <= set(info["extensiones"])
     # cada extensión aceptada aparece en alguna familia de la página, y ninguna familia ofrece una que no se acepte
     assert {e for f in info["familias"] for e in f["extensiones"]} == set(info["extensiones"])
@@ -109,6 +116,63 @@ def test_aprobar_por_http_devuelve_lo_corregido_sin_escribir(base):
     # cada revisión se decide una sola vez; una desconocida da 404
     assert _post(url, {"aprobados": []})[0] == 409
     assert _post(f"{base}/v1/revisiones/no-existe/aprobacion", {"aprobados": []})[0] == 404
+
+
+def test_chat_pregunta_con_citas_y_conversacion_persistida(base):
+    status, _, d = _post(base + "/v1/chat", {"mensaje": "¿Qué atributos deben tener las cookies de sesión?"})
+    assert status == 200 and d["mensajes"][1]["meta"]["ruta"] == "consulta_estandar"
+    assert d["mensajes"][1]["meta"]["citas"]
+    conv = json.load(urllib.request.urlopen(f"{base}/v1/chat/{d['conversacion_id']}"))
+    assert [m["rol"] for m in conv["mensajes"]] == ["usuario", "asistente"]
+    traza = json.load(urllib.request.urlopen(f"{base}/v1/trazas/{d['trace_id']}"))
+    # primer mensaje: sin historial no hay nada que reformular (y no se gasta una llamada)
+    assert [e["tipo"] for e in traza["eventos"]][:3] == ["router", "rag", "llm"]
+
+
+def test_chat_invoca_al_agente_y_la_aprobacion_vuelve_al_chat(base):
+    codigo = ("```csharp\n// archivo: ClienteService.cs\npublic Cliente Obtener(int id)\n{\n"
+              "    var cliente = _repo.ObtenerAsync(id).Result;\n    return cliente;\n}\n```")
+    _, _, d = _post(base + "/v1/chat", {"mensaje": codigo, "tipo_app": "api"})
+    rev = d["mensajes"][1]["meta"]["revision"]
+    assert rev["archivo"] == "ClienteService.cs" and rev["evaluado_como"] == "api" and rev["parches"]
+    url = f"{base}/v1/revisiones/{rev['revision_id']}/aprobacion"
+    status, _, a = _post(url, {"aprobados": [{"archivo": rev["archivo"], "parche": rev["parches"][0]["id"]}]})
+    assert status == 200 and a["mensaje_chat"]["rol"] == "sistema" and a["corregidos"]
+    conv = json.load(urllib.request.urlopen(f"{base}/v1/chat/{d['conversacion_id']}"))
+    assert conv["mensajes"][-1]["meta"]["tipo"] == "aprobacion"
+    assert _post(url, {"aprobados": []})[0] == 409                    # decisión única
+
+
+def test_chat_errores_en_problem_details(base):
+    status, tipo, d = _post(base + "/v1/chat", {"mensaje": "hola", "campo_extra": 1})
+    assert status == 400 and tipo == "application/problem+json" and "campo_extra" in d["errors"]
+    assert _post(base + "/v1/chat", {"mensaje": "hola", "conversacion_id": 999999})[0] == 404
+    assert _post(base + "/v1/chat", {"mensaje": "x" * 20_001})[0] == 400
+    with pytest.raises(urllib.error.HTTPError) as e:
+        urllib.request.urlopen(base + "/v1/trazas/no-existe")
+    assert e.value.code == 404
+
+
+def test_limite_de_tasa_por_equipo():
+    from agente.api import LimiteTasa
+    limite = LimiteTasa(2)
+    assert limite.esperar("10.0.0.1") == 0 and limite.esperar("10.0.0.1") == 0
+    assert 0 < limite.esperar("10.0.0.1") <= 61          # el tercero espera (429 con Retry-After)
+    assert limite.esperar("10.0.0.2") == 0               # otro equipo no se ve afectado
+
+
+def test_la_api_aplica_el_limite_antes_de_procesar(monkeypatch):
+    """Revisar y chatear gastan modelo: superado el límite se responde 429 sin validar ni ejecutar nada."""
+    from starlette.testclient import TestClient
+
+    from agente.api import crear_app
+    monkeypatch.setenv("LIMITE_POR_MINUTO", "2")
+    cliente = TestClient(crear_app())
+    for ruta in ("/v1/chat", "/v1/revisiones"):
+        assert cliente.post(ruta, json={}).status_code != 429
+    r = cliente.post("/v1/chat", json={"mensaje": "hola"})
+    assert r.status_code == 429 and int(r.headers["Retry-After"]) > 0
+    assert r.headers["Content-Type"].startswith("application/problem+json")
 
 
 def test_el_script_de_validacion_pasa_contra_la_api(base):

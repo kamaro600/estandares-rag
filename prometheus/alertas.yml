@@ -1,0 +1,28 @@
+# Alertas operativas (recomendación 6.2.5 del informe final): uso del respaldo, citas inválidas, cola humana,
+# costo por hora, errores del proveedor y ataques. Prometheus las evalúa; se ven en http://localhost:9090/alerts.
+groups:
+  - name: agente-estandares
+    rules:
+      - alert: RouterUsaMuchoRespaldo
+        expr: sum(increase(lab07_router_respaldo_total{motivo=~"bajo_umbral|error"}[30m])) / clamp_min(sum(increase(lab07_chat_mensajes_total[30m])), 1) > 0.5
+        for: 15m
+        annotations: {summary: "Más de la mitad de los mensajes los decide el respaldo: recalibrar ROUTER_MIN_SCORE o ampliar data/rutas.json"}
+      - alert: CitasInvalidas
+        expr: sum(increase(lab07_citas_invalidas_total[1h])) > 5
+        annotations: {summary: "El modelo cita reglas que no recibió (posible alucinación o cambio de versión del modelo)"}
+      - alert: MuchaAbstencion
+        expr: sum(increase(lab07_rag_sin_contexto_total[1h])) / clamp_min(sum(increase(lab07_chat_mensajes_total{ruta="consulta_estandar"}[1h])), 1) > 0.4
+        for: 30m
+        annotations: {summary: "El chat responde 'no está en los estándares' a más del 40 %: revisar RAG_MIN_SCORE o el corpus"}
+      - alert: MuchaRevisionManual
+        expr: sum(increase(lab07_revision_manual_total[1h])) > 50
+        annotations: {summary: "Muchos hallazgos derivados a revisión humana en la última hora: la cola crece"}
+      - alert: CostoPorHora
+        expr: sum(increase(lab07_costo_usd_total[1h])) > 5
+        annotations: {summary: "El costo estimado del modelo supera 5 USD por hora"}
+      - alert: ErroresDelProveedor
+        expr: sum(increase(lab07_llm_errores_total{tipo!="rechazo"}[15m])) > 10
+        annotations: {summary: "Errores frecuentes con Claude u OpenAI: el chat y los especialistas están degradados"}
+      - alert: IntentosDeInyeccion
+        expr: sum(increase(lab07_inyeccion_total[1h])) > 10
+        annotations: {summary: "Muchos intentos de prompt injection en la última hora"}

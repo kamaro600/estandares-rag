@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 
 class Parche(BaseModel):
+    """Una corrección propuesta: reemplazar las líneas linea_inicio..linea_fin. Solo se aplica si un humano la aprueba."""
     id: str = ""
     archivo: str
     hallazgo_id: str

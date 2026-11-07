@@ -17,7 +17,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from agente import config
+from agente import catalogo, config
 
 RAIZ = Path(__file__).resolve().parent.parent
 # Un ejemplo por lenguaje: (archivo, lenguaje esperado, contexto con el que debe evaluarse)
@@ -81,7 +81,8 @@ def main() -> int:
     except OSError as e:
         comprobar(False, "la API responde", f"{e}. ¿Está corriendo uvicorn en {base}?")
         return resumen()
-    comprobar(status == 200 and json.loads(cuerpo)["reglas"] == 170, "GET /health: 170 reglas cargadas")
+    esperadas = len(catalogo.cargar())   # las del catálogo local: la API debe haber cargado el mismo
+    comprobar(status == 200 and json.loads(cuerpo)["reglas"] == esperadas, f"GET /health: {esperadas} reglas cargadas")
     info = json.loads(pedir(base + "/v1/info")[2])
     comprobar(len(info["extensiones"]) == 24, f"GET /v1/info: {len(info['extensiones'])} extensiones aceptadas",
               "se esperaban 24")

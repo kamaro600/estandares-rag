@@ -1,3 +1,4 @@
+"""La línea de comandos: código de salida útil como quality gate del pipeline, búsqueda y consulta de una regla."""
 import subprocess
 import sys
 from pathlib import Path

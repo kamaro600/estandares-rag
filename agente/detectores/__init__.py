@@ -65,6 +65,7 @@ def es_movil(archivo: "Archivo") -> bool:
 
 
 class Hallazgo(BaseModel):
+    """Un incumplimiento encontrado por un detector, ya resuelto contra el catálogo (regla, cita, severidad)."""
     id: str
     archivo: str
     linea: int
@@ -83,6 +84,11 @@ class Hallazgo(BaseModel):
 
 @dataclass(frozen=True)
 class Patron:
+    """Un detector por línea: una expresión regular atada a una o más reglas candidatas.
+
+    La primera regla que aplica al contexto es la que se reporta; verificar y excluir afinan el patrón, y
+    autofix propone la línea corregida cuando el arreglo es mecánico.
+    """
     codigo: str
     lenguajes: tuple[str, ...]
     reglas: tuple[str, ...]
@@ -99,6 +105,7 @@ class Patron:
 
 @dataclass
 class Archivo:
+    """Un archivo a revisar, con saltos de línea normalizados y su lenguaje deducido del nombre."""
     nombre: str
     contenido: str
     lenguaje: str = ""
@@ -196,6 +203,9 @@ def cargar_detectores() -> list[Patron]:
 
 
 def analizar(archivo: Archivo, ctx: Contexto) -> list[Hallazgo]:
+    """Ejecuta los patrones por línea (sin mirar comentarios) y los detectores de archivo completo, y resuelve
+    duplicados y precedencia (SEG primero) entre los hallazgos de una misma línea.
+    """
     cargar_detectores()
 
     if not archivo.lenguaje:

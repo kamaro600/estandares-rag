@@ -12,7 +12,7 @@
   "fecha": "2026-01-19",
   "seccion": "4.1",
   "pagina": 3,
-  "texto": "Las URLs usan sustantivos en plural, en minúsculas y kebab-case, con el prefijo /api/v{n}:\n/api/v1/clientes/{clienteId}/cuentas. Está prohibido usar verbos en la URL (/obtenerClientes,\n/clientes/eliminar/5), extensiones (.json) y mayúsculas. Las acciones que no encajan en CRUD se\nmodelan como subrecursos (POST /api/v1/pedidos/{pedidoId}/anulacion).\nEjemplo incorrecto\nGET  /api/ObtenerClientes\nPOST /api/clientes/eliminar/5\nGET  /api/v1/Cliente/5/CuentasBancarias\nEjemplo correcto\nGET    /api/v1/clientes\nDELETE /api/v1/clientes/5\nGET    /api/v1/clientes/5/cuentas-bancarias\nEST-API-001 · Estándar de Diseño y Desarrollo de APIs\nVersión 2.0 · 2026-01-19\nPágina 3 de 8"
+  "texto": "Las URLs usan sustantivos en plural, en minúsculas y kebab-case, con el prefijo /api/v{n}:\n/api/v1/clientes/{clienteId}/cuentas. Está prohibido usar verbos en la URL (/obtenerClientes,\n/clientes/eliminar/5), extensiones (.json) y mayúsculas. Las acciones que no encajan en CRUD se\nmodelan como subrecursos (POST /api/v1/pedidos/{pedidoId}/anulacion).\nEjemplo incorrecto\nGET  /api/ObtenerClientes\nPOST /api/clientes/eliminar/5\nGET  /api/v1/Cliente/5/CuentasBancarias\nEjemplo correcto\nGET    /api/v1/clientes\nDELETE /api/v1/clientes/5\nGET    /api/v1/clientes/5/cuentas-bancarias"
  },
  {
   "id": "API-DIS-002",
@@ -106,7 +106,7 @@
   "fecha": "2026-01-19",
   "seccion": "5.2",
   "pagina": 4,
-  "texto": "Una versión deprecada responde con las cabeceras Deprecation y Sunset y convive como mínimo 6\nmeses con la nueva versión. Al cumplirse la fecha de retiro, la versión se elimina del gateway y del\ncatálogo; no deben quedar versiones antiguas expuestas sin dueño.\nEST-API-001 · Estándar de Diseño y Desarrollo de APIs\nVersión 2.0 · 2026-01-19\nPágina 4 de 8"
+  "texto": "Una versión deprecada responde con las cabeceras Deprecation y Sunset y convive como mínimo 6\nmeses con la nueva versión. Al cumplirse la fecha de retiro, la versión se elimina del gateway y del\ncatálogo; no deben quedar versiones antiguas expuestas sin dueño."
  },
  {
   "id": "API-RES-001",
@@ -172,7 +172,7 @@
   "fecha": "2026-01-19",
   "seccion": "6.4",
   "pagina": 5,
-  "texto": "Las operaciones reciben y devuelven DTOs específicos (CrearClienteRequest, ClienteResponse). Está\nprohibido exponer entidades de EF Core o de dominio directamente, porque se filtran campos internos y\nse permite la asignación masiva de propiedades que el usuario no debe modificar.\nEST-API-001 · Estándar de Diseño y Desarrollo de APIs\nVersión 2.0 · 2026-01-19\nPágina 5 de 8\nEjemplo incorrecto\n[HttpPut(\"{clienteId}\")]\npublic async Task<IActionResult> Actualizar(int clienteId, Cliente cliente)\n{   // el usuario puede enviar \"limiteCredito\" o \"esVip\" y se guardan\n_contexto.Update(cliente); await _contexto.SaveChangesAsync(); return NoContent();\n}\nEjemplo correcto\npublic record ActualizarClienteRequest(string Nombre, string Telefono, string Correo);\n[HttpPut(\"{clienteId}\")]\npublic async Task<IActionResult> Actualizar(\nint clienteId, ActualizarClienteRequest req, CancellationToken ct)\n{\nawait _clientes.ActualizarContactoAsync(clienteId, req, ct);\nreturn NoContent();\n}"
+  "texto": "Las operaciones reciben y devuelven DTOs específicos (CrearClienteRequest, ClienteResponse). Está\nprohibido exponer entidades de EF Core o de dominio directamente, porque se filtran campos internos y\nse permite la asignación masiva de propiedades que el usuario no debe modificar.\nEjemplo incorrecto\n[HttpPut(\"{clienteId}\")]\npublic async Task<IActionResult> Actualizar(int clienteId, Cliente cliente)\n{   // el usuario puede enviar \"limiteCredito\" o \"esVip\" y se guardan\n_contexto.Update(cliente); await _contexto.SaveChangesAsync(); return NoContent();\n}\nEjemplo correcto\npublic record ActualizarClienteRequest(string Nombre, string Telefono, string Correo);\n[HttpPut(\"{clienteId}\")]\npublic async Task<IActionResult> Actualizar(\nint clienteId, ActualizarClienteRequest req, CancellationToken ct)\n{\nawait _clientes.ActualizarContactoAsync(clienteId, req, ct);\nreturn NoContent();\n}"
  },
  {
   "id": "API-SEG-001",
@@ -228,7 +228,7 @@
   "fecha": "2026-01-19",
   "seccion": "7.3",
   "pagina": 6,
-  "texto": "Toda API aplica limitación de tasa por cliente (AddRateLimiter en ASP.NET Core o políticas de API\nManagement), un tamaño máximo de petición de 1 MB (salvo operaciones de carga de archivos), tiempos\nmáximos de ejecución y responde 429 con la cabecera Retry-After cuando se supera el límite.\nEjemplo correcto\nbuilder.Services.AddRateLimiter(o =>\n{\no.RejectionStatusCode = StatusCodes.Status429TooManyRequests;\no.AddFixedWindowLimiter(\"porCliente\", l =>\n{\nl.PermitLimit = 100;\nl.Window = TimeSpan.FromMinutes(1);\n});\n});\nEST-API-001 · Estándar de Diseño y Desarrollo de APIs\nVersión 2.0 · 2026-01-19\nPágina 6 de 8"
+  "texto": "Toda API aplica limitación de tasa por cliente (AddRateLimiter en ASP.NET Core o políticas de API\nManagement), un tamaño máximo de petición de 1 MB (salvo operaciones de carga de archivos), tiempos\nmáximos de ejecución y responde 429 con la cabecera Retry-After cuando se supera el límite.\nEjemplo correcto\nbuilder.Services.AddRateLimiter(o =>\n{\no.RejectionStatusCode = StatusCodes.Status429TooManyRequests;\no.AddFixedWindowLimiter(\"porCliente\", l =>\n{\nl.PermitLimit = 100;\nl.Window = TimeSpan.FromMinutes(1);\n});\n});"
  },
  {
   "id": "API-SEG-004",
@@ -330,7 +330,7 @@
   "fecha": "2026-01-19",
   "seccion": "8.2",
   "pagina": 7,
-  "texto": "Los clientes HTTP se registran con IHttpClientFactory como clientes tipados. Está prohibido crear new\nHttpClient() por petición (agota los sockets) y configurar HttpClientHandler para aceptar cualquier\ncertificado.\nEjemplo incorrecto\nusing var http = new HttpClient();\nvar r = await http.GetAsync(\"https://servicio-externo/tipo-cambio\");\nEST-API-001 · Estándar de Diseño y Desarrollo de APIs\nVersión 2.0 · 2026-01-19\nPágina 7 de 8\nEjemplo correcto\nbuilder.Services.AddHttpClient<ITipoCambioClient, TipoCambioClient>(c =>\nc.BaseAddress = new Uri(builder.Configuration[\"Servicios:TipoCambio\"]!))\n.AddStandardResilienceHandler();"
+  "texto": "Los clientes HTTP se registran con IHttpClientFactory como clientes tipados. Está prohibido crear new\nHttpClient() por petición (agota los sockets) y configurar HttpClientHandler para aceptar cualquier\ncertificado.\nEjemplo incorrecto\nusing var http = new HttpClient();\nvar r = await http.GetAsync(\"https://servicio-externo/tipo-cambio\");\nEjemplo correcto\nbuilder.Services.AddHttpClient<ITipoCambioClient, TipoCambioClient>(c =>\nc.BaseAddress = new Uri(builder.Configuration[\"Servicios:TipoCambio\"]!))\n.AddStandardResilienceHandler();"
  },
  {
   "id": "API-NET-003",
@@ -443,7 +443,7 @@
   "fecha": "2023-08-14",
   "seccion": "4.2",
   "pagina": 3,
-  "texto": "Las aplicaciones WPF usan el patrón MVVM con CommunityToolkit.Mvvm. El code-behind de las vistas\n(*.xaml.cs) solo contiene lógica puramente visual; las acciones del usuario se enlazan a comandos\n(ICommand / [RelayCommand]) del ViewModel y los datos mediante bindings.\nEjemplo incorrecto\n// ClienteView.xaml.cs\nprivate void btnGuardar_Click(object sender, RoutedEventArgs e)\n{\nusing var cn = new SqlConnection(cadena);\n// ... INSERT directo desde la vista\n}\nEST-DSK-001 · Estándar de Desarrollo de Aplicaciones de Escritorio .NET\nVersión 1.4 · 2023-08-14\nPágina 3 de 7\nEjemplo correcto\n// ClienteViewModel.cs\npublic partial class ClienteViewModel : ObservableObject\n{\n[ObservableProperty] private string _nombre = \"\";\n[RelayCommand]\nprivate async Task GuardarAsync() => await _clienteService.GuardarAsync(new ClienteDto(Nombre));\n}\n// ClienteView.xaml: <Button Content=\"Guardar\" Command=\"{Binding GuardarCommand}\" />"
+  "texto": "Las aplicaciones WPF usan el patrón MVVM con CommunityToolkit.Mvvm. El code-behind de las vistas\n(*.xaml.cs) solo contiene lógica puramente visual; las acciones del usuario se enlazan a comandos\n(ICommand / [RelayCommand]) del ViewModel y los datos mediante bindings.\nEjemplo incorrecto\n// ClienteView.xaml.cs\nprivate void btnGuardar_Click(object sender, RoutedEventArgs e)\n{\nusing var cn = new SqlConnection(cadena);\n// ... INSERT directo desde la vista\n}\nEjemplo correcto\n// ClienteViewModel.cs\npublic partial class ClienteViewModel : ObservableObject\n{\n[ObservableProperty] private string _nombre = \"\";\n[RelayCommand]\nprivate async Task GuardarAsync() => await _clienteService.GuardarAsync(new ClienteDto(Nombre));\n}\n// ClienteView.xaml: <Button Content=\"Guardar\" Command=\"{Binding GuardarCommand}\" />"
  },
  {
   "id": "DSK-ARQ-003",
@@ -507,7 +507,7 @@
   "fecha": "2023-08-14",
   "seccion": "5.2",
   "pagina": 4,
-  "texto": "Las operaciones de base de datos, red o archivos se ejecutan de forma asíncrona (async/await) para no\ncongelar la interfaz. Está prohibido usar Thread.Sleep, .Result o .Wait() en el hilo de la interfaz. Las\nactualizaciones de la UI desde otros hilos se hacen con el Dispatcher o mediante bindings a propiedades\nobservables.\nEjemplo incorrecto\nprivate void btnBuscar_Click(object sender, EventArgs e)\n{\nvar clientes = _servicio.BuscarAsync(txtFiltro.Text).Result;   // congela la ventana\ndgvClientes.DataSource = clientes;\n}\nEST-DSK-001 · Estándar de Desarrollo de Aplicaciones de Escritorio .NET\nVersión 1.4 · 2023-08-14\nPágina 4 de 7\nEjemplo correcto\nprivate async void btnBuscar_Click(object sender, EventArgs e)   // async void solo en manejadores\n{\nbtnBuscar.Enabled = false;\ntry { dgvClientes.DataSource = await _servicio.BuscarAsync(txtFiltro.Text); }\nfinally { btnBuscar.Enabled = true; }\n}"
+  "texto": "Las operaciones de base de datos, red o archivos se ejecutan de forma asíncrona (async/await) para no\ncongelar la interfaz. Está prohibido usar Thread.Sleep, .Result o .Wait() en el hilo de la interfaz. Las\nactualizaciones de la UI desde otros hilos se hacen con el Dispatcher o mediante bindings a propiedades\nobservables.\nEjemplo incorrecto\nprivate void btnBuscar_Click(object sender, EventArgs e)\n{\nvar clientes = _servicio.BuscarAsync(txtFiltro.Text).Result;   // congela la ventana\ndgvClientes.DataSource = clientes;\n}\nEjemplo correcto\nprivate async void btnBuscar_Click(object sender, EventArgs e)   // async void solo en manejadores\n{\nbtnBuscar.Enabled = false;\ntry { dgvClientes.DataSource = await _servicio.BuscarAsync(txtFiltro.Text); }\nfinally { btnBuscar.Enabled = true; }\n}"
  },
  {
   "id": "DSK-NET-003",
@@ -586,7 +586,7 @@
   "fecha": "2023-08-14",
   "seccion": "6.1",
   "pagina": 5,
-  "texto": "Las tablas se nombran en MAYÚSCULAS, en plural, con palabras separadas por guion bajo y con el\nprefijo TBL_: TBL_CLIENTES, TBL_DETALLE_PEDIDOS. Las tablas se crean en el esquema dbo.\nEjemplo correcto\nCREATE TABLE dbo.TBL_CLIENTES (\nID_CLIENTE   INT IDENTITY(1,1) NOT NULL,\nNOM_CLIENTE  VARCHAR(150) NOT NULL,\nNUM_DOCUMENTO VARCHAR(15) NOT NULL,\nFEC_REGISTRO DATETIME NOT NULL,\nCONSTRAINT PK_TBL_CLIENTES PRIMARY KEY (ID_CLIENTE)\n);\nEST-DSK-001 · Estándar de Desarrollo de Aplicaciones de Escritorio .NET\nVersión 1.4 · 2023-08-14\nPágina 5 de 7"
+  "texto": "Las tablas se nombran en MAYÚSCULAS, en plural, con palabras separadas por guion bajo y con el\nprefijo TBL_: TBL_CLIENTES, TBL_DETALLE_PEDIDOS. Las tablas se crean en el esquema dbo.\nEjemplo correcto\nCREATE TABLE dbo.TBL_CLIENTES (\nID_CLIENTE   INT IDENTITY(1,1) NOT NULL,\nNOM_CLIENTE  VARCHAR(150) NOT NULL,\nNUM_DOCUMENTO VARCHAR(15) NOT NULL,\nFEC_REGISTRO DATETIME NOT NULL,\nCONSTRAINT PK_TBL_CLIENTES PRIMARY KEY (ID_CLIENTE)\n);"
  },
  {
   "id": "DSK-BD-002",
@@ -679,7 +679,7 @@
   "fecha": "2023-08-14",
   "seccion": "6.7",
   "pagina": 6,
-  "texto": "Las transacciones se controlan dentro de los procedimientos almacenados. Desde la aplicación se usa\nSqlTransaction o TransactionScope solo cuando una operación de negocio involucra varias llamadas y\nsiempre con nivel de aislamiento READ COMMITTED. Las transacciones no deben quedar abiertas\nesperando una acción del usuario.\nEST-DSK-001 · Estándar de Desarrollo de Aplicaciones de Escritorio .NET\nVersión 1.4 · 2023-08-14\nPágina 6 de 7"
+  "texto": "Las transacciones se controlan dentro de los procedimientos almacenados. Desde la aplicación se usa\nSqlTransaction o TransactionScope solo cuando una operación de negocio involucra varias llamadas y\nsiempre con nivel de aislamiento READ COMMITTED. Las transacciones no deben quedar abiertas\nesperando una acción del usuario."
  },
  {
   "id": "DSK-BD-008",
@@ -829,7 +829,7 @@
   "fecha": "2026-03-10",
   "seccion": "4.3",
   "pagina": 3,
-  "texto": "Versiones adoptadas: ASVS 4.0.3 (la migración a ASVS 5.0 está planificada; mientras tanto los\nidentificadores de requisitos citados en los estándares internos corresponden a la 4.0.3), MASVS 2.x,\nOWASP Top 10 edición 2021 y OWASP API Security Top 10 edición 2023. Seguridad de la Información\nrevisa las versiones una vez al año.\nEST-REF-001 · Marco de Referencia de Estándares Externos\nVersión 1.3 · 2026-03-10\nPágina 3 de 10"
+  "texto": "Versiones adoptadas: ASVS 4.0.3 (la migración a ASVS 5.0 está planificada; mientras tanto los\nidentificadores de requisitos citados en los estándares internos corresponden a la 4.0.3), MASVS 2.x,\nOWASP Top 10 edición 2021 y OWASP API Security Top 10 edición 2023. Seguridad de la Información\nrevisa las versiones una vez al año."
  },
  {
   "id": "REF-T10-A01",
@@ -937,7 +937,7 @@
   "fecha": "2026-03-10",
   "seccion": "5.6",
   "pagina": 4,
-  "texto": "Uso de bibliotecas, frameworks o plataformas con vulnerabilidades conocidas o sin soporte del fabricante,\ny falta de un inventario de dependencias.\nReglas internas relacionadas: SEG-CFG-003, SEG-CFG-004.\nEST-REF-001 · Marco de Referencia de Estándares Externos\nVersión 1.3 · 2026-03-10\nPágina 4 de 10"
+  "texto": "Uso de bibliotecas, frameworks o plataformas con vulnerabilidades conocidas o sin soporte del fabricante,\ny falta de un inventario de dependencias.\nReglas internas relacionadas: SEG-CFG-003, SEG-CFG-004."
  },
  {
   "id": "REF-T10-A07",
@@ -1060,7 +1060,7 @@
   "fecha": "2026-03-10",
   "seccion": "6.3",
   "pagina": 5,
-  "texto": "La API expone propiedades que el usuario no debería ver o permite modificar propiedades que no debería\ncambiar (asignación masiva).\nReglas internas relacionadas: API-RES-004.\nEST-REF-001 · Marco de Referencia de Estándares Externos\nVersión 1.3 · 2026-03-10\nPágina 5 de 10"
+  "texto": "La API expone propiedades que el usuario no debería ver o permite modificar propiedades que no debería\ncambiar (asignación masiva).\nReglas internas relacionadas: API-RES-004."
  },
  {
   "id": "REF-API-04",
@@ -1179,7 +1179,7 @@
   "fecha": "2026-03-10",
   "seccion": "6.10",
   "pagina": 6,
-  "texto": "Se confía ciegamente en las respuestas de APIs de terceros sin validarlas ni limitar su impacto.\nReglas internas relacionadas: API-SEG-006.\nEST-REF-001 · Marco de Referencia de Estándares Externos\nVersión 1.3 · 2026-03-10\nPágina 6 de 10"
+  "texto": "Se confía ciegamente en las respuestas de APIs de terceros sin validarlas ni limitar su impacto.\nReglas internas relacionadas: API-SEG-006."
  },
  {
   "id": "REF-ASVS-V1",
@@ -1287,7 +1287,7 @@
   "fecha": "2026-03-10",
   "seccion": "7.6",
   "pagina": 7,
-  "texto": "Algoritmos aprobados (V6.2.2), aleatorios criptográficamente seguros (V6.3.1) y gestión de secretos en\nuna bóveda (V6.4.1).\nReglas internas relacionadas: SEG-CRI-001, SEG-CRI-002, SEG-CRI-003, SEG-DSK-002.\nEST-REF-001 · Marco de Referencia de Estándares Externos\nVersión 1.3 · 2026-03-10\nPágina 7 de 10"
+  "texto": "Algoritmos aprobados (V6.2.2), aleatorios criptográficamente seguros (V6.3.1) y gestión de secretos en\nuna bóveda (V6.4.1).\nReglas internas relacionadas: SEG-CRI-001, SEG-CRI-002, SEG-CRI-003, SEG-DSK-002."
  },
  {
   "id": "REF-ASVS-V7",
@@ -1413,7 +1413,7 @@
   "fecha": "2026-03-10",
   "seccion": "7.13",
   "pagina": 8,
-  "texto": "Las URLs no exponen información sensible como claves de API (V13.1.3), los métodos HTTP se validan\n(V13.2.1) y la entrada JSON se valida contra un esquema (V13.2.2).\nReglas internas relacionadas: API-DIS-002, API-SEG-001, API-SEG-004.\nEST-REF-001 · Marco de Referencia de Estándares Externos\nVersión 1.3 · 2026-03-10\nPágina 8 de 10"
+  "texto": "Las URLs no exponen información sensible como claves de API (V13.1.3), los métodos HTTP se validan\n(V13.2.1) y la entrada JSON se valida contra un esquema (V13.2.2).\nReglas internas relacionadas: API-DIS-002, API-SEG-001, API-SEG-004."
  },
  {
   "id": "REF-ASVS-V14",
@@ -1533,7 +1533,7 @@
   "fecha": "2026-03-10",
   "seccion": "8.6",
   "pagina": 9,
-  "texto": "CODE-1: versión de plataforma actualizada. CODE-2: mecanismo para forzar actualizaciones. CODE-3:\nsolo componentes sin vulnerabilidades conocidas. CODE-4: validación y sanitización de toda entrada no\nconfiable.\nReglas internas relacionadas: SEG-MOV-007, SEG-CFG-003, SEG-INY-002.\nEST-REF-001 · Marco de Referencia de Estándares Externos\nVersión 1.3 · 2026-03-10\nPágina 9 de 10"
+  "texto": "CODE-1: versión de plataforma actualizada. CODE-2: mecanismo para forzar actualizaciones. CODE-3:\nsolo componentes sin vulnerabilidades conocidas. CODE-4: validación y sanitización de toda entrada no\nconfiable.\nReglas internas relacionadas: SEG-MOV-007, SEG-CFG-003, SEG-INY-002."
  },
  {
   "id": "REF-MAS-RESILIENCE",
@@ -1609,7 +1609,7 @@
   "fecha": "2026-03-10",
   "seccion": "4.2",
   "pagina": 3,
-  "texto": "Cada componente (cuenta de servicio, usuario de base de datos, identidad administrada, rol de\naplicación) recibe solo los permisos estrictamente necesarios. Está prohibido usar cuentas con privilegios\nde administrador (por ejemplo sa o db_owner en SQL Server) para la operación normal de una aplicación.\nEST-SEG-001 · Estándar de Desarrollo Seguro\nVersión 2.1 · 2026-03-10\nPágina 3 de 13"
+  "texto": "Cada componente (cuenta de servicio, usuario de base de datos, identidad administrada, rol de\naplicación) recibe solo los permisos estrictamente necesarios. Está prohibido usar cuentas con privilegios\nde administrador (por ejemplo sa o db_owner en SQL Server) para la operación normal de una aplicación."
  },
  {
   "id": "SEG-GEN-003",
@@ -1695,7 +1695,7 @@
   "fecha": "2026-03-10",
   "seccion": "5.3",
   "pagina": 4,
-  "texto": "Es obligatorio el segundo factor (MFA) para: accesos administrativos, accesos remotos, operaciones\nmonetarias iniciadas por clientes y cambios de datos de contacto o de credenciales. En móviles el\nsegundo factor puede ser biometría ligada a una clave del almacén seguro del dispositivo (ver\nSEG-MOV-004).\nEST-SEG-001 · Estándar de Desarrollo Seguro\nVersión 2.1 · 2026-03-10\nPágina 4 de 13"
+  "texto": "Es obligatorio el segundo factor (MFA) para: accesos administrativos, accesos remotos, operaciones\nmonetarias iniciadas por clientes y cambios de datos de contacto o de credenciales. En móviles el\nsegundo factor puede ser biometría ligada a una clave del almacén seguro del dispositivo (ver\nSEG-MOV-004)."
  },
  {
   "id": "SEG-AUT-004",
@@ -1756,7 +1756,7 @@
   "fecha": "2026-03-10",
   "seccion": "5.6",
   "pagina": 5,
-  "texto": "Toda API que reciba JWT debe validar firma, emisor (iss), audiencia (aud) y vigencia (exp, nbf) con una\ntolerancia de reloj máxima de 2 minutos. Está prohibido aceptar el algoritmo none o desactivar cualquiera\nde las validaciones. El token de acceso dura como máximo 60 minutos; los tokens de refresco se rotan en\ncada uso.\nEjemplo incorrecto\noptions.TokenValidationParameters = new TokenValidationParameters\n{\nValidateIssuer = false,\nValidateAudience = false,\nValidateLifetime = false\n};\nEjemplo correcto\noptions.Authority = configuracion[\"Auth:Authority\"];\noptions.TokenValidationParameters = new TokenValidationParameters\n{\nValidateIssuer = true,\nValidAudience = configuracion[\"Auth:Audience\"],\nValidateLifetime = true,\nClockSkew = TimeSpan.FromMinutes(2)\n};\nEST-SEG-001 · Estándar de Desarrollo Seguro\nVersión 2.1 · 2026-03-10\nPágina 5 de 13"
+  "texto": "Toda API que reciba JWT debe validar firma, emisor (iss), audiencia (aud) y vigencia (exp, nbf) con una\ntolerancia de reloj máxima de 2 minutos. Está prohibido aceptar el algoritmo none o desactivar cualquiera\nde las validaciones. El token de acceso dura como máximo 60 minutos; los tokens de refresco se rotan en\ncada uso.\nEjemplo incorrecto\noptions.TokenValidationParameters = new TokenValidationParameters\n{\nValidateIssuer = false,\nValidateAudience = false,\nValidateLifetime = false\n};\nEjemplo correcto\noptions.Authority = configuracion[\"Auth:Authority\"];\noptions.TokenValidationParameters = new TokenValidationParameters\n{\nValidateIssuer = true,\nValidAudience = configuracion[\"Auth:Audience\"],\nValidateLifetime = true,\nClockSkew = TimeSpan.FromMinutes(2)\n};"
  },
  {
   "id": "SEG-ACC-001",
@@ -1835,7 +1835,7 @@
   "fecha": "2026-03-10",
   "seccion": "7.1",
   "pagina": 6,
-  "texto": "Toda consulta a base de datos debe usar parámetros. Está prohibido construir sentencias SQL\nconcatenando o interpolando valores provenientes del usuario, tanto en C# como dentro de\nprocedimientos almacenados. El SQL dinámico en T-SQL solo se permite con sp_executesql y\nparámetros; los nombres de columnas u ordenamientos dinámicos se validan contra una lista blanca.\nEjemplo incorrecto\nvar sql = \"SELECT ClienteId, Nombre FROM ventas.Cliente WHERE Documento = '\" + documento + \"'\";\nusing var cmd = new SqlCommand(sql, conexion);\n-- T-SQL\nSET @sql = N'SELECT * FROM ventas.Cliente WHERE Nombre LIKE ''%' + @filtro + '%''';\nEXEC(@sql);\nEST-SEG-001 · Estándar de Desarrollo Seguro\nVersión 2.1 · 2026-03-10\nPágina 6 de 13\nEjemplo correcto\nconst string sql = \"SELECT ClienteId, Nombre FROM ventas.Cliente WHERE Documento = @Documento\";\nusing var cmd = new SqlCommand(sql, conexion);\ncmd.Parameters.Add(\"@Documento\", SqlDbType.VarChar, 15).Value = documento;\n-- T-SQL\nSET @sql = N'SELECT ClienteId, Nombre FROM ventas.Cliente WHERE Nombre LIKE @patron';\nEXEC sp_executesql @sql, N'@patron NVARCHAR(102)', @patron = N'%' + @filtro + N'%';"
+  "texto": "Toda consulta a base de datos debe usar parámetros. Está prohibido construir sentencias SQL\nconcatenando o interpolando valores provenientes del usuario, tanto en C# como dentro de\nprocedimientos almacenados. El SQL dinámico en T-SQL solo se permite con sp_executesql y\nparámetros; los nombres de columnas u ordenamientos dinámicos se validan contra una lista blanca.\nEjemplo incorrecto\nvar sql = \"SELECT ClienteId, Nombre FROM ventas.Cliente WHERE Documento = '\" + documento + \"'\";\nusing var cmd = new SqlCommand(sql, conexion);\n-- T-SQL\nSET @sql = N'SELECT * FROM ventas.Cliente WHERE Nombre LIKE ''%' + @filtro + '%''';\nEXEC(@sql);\nEjemplo correcto\nconst string sql = \"SELECT ClienteId, Nombre FROM ventas.Cliente WHERE Documento = @Documento\";\nusing var cmd = new SqlCommand(sql, conexion);\ncmd.Parameters.Add(\"@Documento\", SqlDbType.VarChar, 15).Value = documento;\n-- T-SQL\nSET @sql = N'SELECT ClienteId, Nombre FROM ventas.Cliente WHERE Nombre LIKE @patron';\nEXEC sp_executesql @sql, N'@patron NVARCHAR(102)', @patron = N'%' + @filtro + N'%';"
  },
  {
   "id": "SEG-INY-002",
@@ -1915,7 +1915,7 @@
   "fecha": "2026-03-10",
   "seccion": "7.5",
   "pagina": 7,
-  "texto": "Está prohibido usar BinaryFormatter, SoapFormatter, NetDataContractSerializer y LosFormatter.\nCon Newtonsoft.Json está prohibido TypeNameHandling distinto de None. El serializador por defecto es\nSystem.Text.Json.\nEjemplo incorrecto\nvar formatter = new BinaryFormatter();\nvar pedido = (Pedido)formatter.Deserialize(stream);\nEjemplo correcto\nvar pedido = await JsonSerializer.DeserializeAsync<PedidoDto>(stream, opciones);\nEST-SEG-001 · Estándar de Desarrollo Seguro\nVersión 2.1 · 2026-03-10\nPágina 7 de 13"
+  "texto": "Está prohibido usar BinaryFormatter, SoapFormatter, NetDataContractSerializer y LosFormatter.\nCon Newtonsoft.Json está prohibido TypeNameHandling distinto de None. El serializador por defecto es\nSystem.Text.Json.\nEjemplo incorrecto\nvar formatter = new BinaryFormatter();\nvar pedido = (Pedido)formatter.Deserialize(stream);\nEjemplo correcto\nvar pedido = await JsonSerializer.DeserializeAsync<PedidoDto>(stream, opciones);"
  },
  {
   "id": "SEG-INY-006",
@@ -2019,7 +2019,7 @@
   "fecha": "2026-03-10",
   "seccion": "8.3",
   "pagina": 8,
-  "texto": "Cadenas de conexión con contraseña, claves de API, certificados y secretos de cliente se guardan en\nAzure Key Vault y se leen en tiempo de ejecución, preferentemente con identidad administrada. En\ndesarrollo local se usa dotnet user-secrets. Está prohibido guardar secretos en el código fuente, en\nappsettings.json, en environment.ts de Angular o en cualquier archivo del repositorio. Un secreto\nexpuesto en el repositorio se considera comprometido y debe rotarse.\nEjemplo incorrecto\n// appsettings.json\n\"ConnectionStrings\": {\n\"Ventas\": \"Server=sqlprod01;Database=Ventas;User Id=app_ventas;Password=Ventas2024!\"\n}\nEjemplo correcto\n// Program.cs\nbuilder.Configuration.AddAzureKeyVault(\nnew Uri(builder.Configuration[\"KeyVault:Uri\"]!), new DefaultAzureCredential());\n// El secreto \"ConnectionStrings--Ventas\" vive en Key Vault\nEST-SEG-001 · Estándar de Desarrollo Seguro\nVersión 2.1 · 2026-03-10\nPágina 8 de 13"
+  "texto": "Cadenas de conexión con contraseña, claves de API, certificados y secretos de cliente se guardan en\nAzure Key Vault y se leen en tiempo de ejecución, preferentemente con identidad administrada. En\ndesarrollo local se usa dotnet user-secrets. Está prohibido guardar secretos en el código fuente, en\nappsettings.json, en environment.ts de Angular o en cualquier archivo del repositorio. Un secreto\nexpuesto en el repositorio se considera comprometido y debe rotarse.\nEjemplo incorrecto\n// appsettings.json\n\"ConnectionStrings\": {\n\"Ventas\": \"Server=sqlprod01;Database=Ventas;User Id=app_ventas;Password=Ventas2024!\"\n}\nEjemplo correcto\n// Program.cs\nbuilder.Configuration.AddAzureKeyVault(\nnew Uri(builder.Configuration[\"KeyVault:Uri\"]!), new DefaultAzureCredential());\n// El secreto \"ConnectionStrings--Ventas\" vive en Key Vault"
  },
  {
   "id": "SEG-CRI-004",
@@ -2126,7 +2126,7 @@
   "fecha": "2026-03-10",
   "seccion": "9.3",
   "pagina": 9,
-  "texto": "Los errores mostrados al usuario o devueltos por una API son genéricos e incluyen un identificador de\nseguimiento. Está prohibido devolver trazas de pila, sentencias SQL, rutas de archivos o versiones de\ncomponentes. En ASP.NET Core la página de excepciones para desarrolladores solo se habilita en el\nentorno Development.\nEST-SEG-001 · Estándar de Desarrollo Seguro\nVersión 2.1 · 2026-03-10\nPágina 9 de 13"
+  "texto": "Los errores mostrados al usuario o devueltos por una API son genéricos e incluyen un identificador de\nseguimiento. Está prohibido devolver trazas de pila, sentencias SQL, rutas de archivos o versiones de\ncomponentes. En ASP.NET Core la página de excepciones para desarrolladores solo se habilita en el\nentorno Development."
  },
  {
   "id": "SEG-CFG-001",
@@ -2227,7 +2227,7 @@
   "fecha": "2026-03-10",
   "seccion": "11.1",
   "pagina": 10,
-  "texto": "Tokens, credenciales y claves se guardan únicamente en el almacén seguro de la plataforma:\nSecureStorage en .NET MAUI, Keychain en iOS y Android Keystore / EncryptedSharedPreferences en\nAndroid. Está prohibido guardarlos en Preferences, SharedPreferences, UserDefaults, archivos o\nbases SQLite sin cifrar.\nEjemplo incorrecto\nPreferences.Default.Set(\"access_token\", token);\nEST-SEG-001 · Estándar de Desarrollo Seguro\nVersión 2.1 · 2026-03-10\nPágina 10 de 13\nEjemplo correcto\nawait SecureStorage.Default.SetAsync(\"access_token\", token);"
+  "texto": "Tokens, credenciales y claves se guardan únicamente en el almacén seguro de la plataforma:\nSecureStorage en .NET MAUI, Keychain en iOS y Android Keystore / EncryptedSharedPreferences en\nAndroid. Está prohibido guardarlos en Preferences, SharedPreferences, UserDefaults, archivos o\nbases SQLite sin cifrar.\nEjemplo incorrecto\nPreferences.Default.Set(\"access_token\", token);\nEjemplo correcto\nawait SecureStorage.Default.SetAsync(\"access_token\", token);"
  },
  {
   "id": "SEG-MOV-002",
@@ -2334,7 +2334,7 @@
   "fecha": "2026-03-10",
   "seccion": "11.7",
   "pagina": 11,
-  "texto": "Se define una versión mínima de sistema operativo con soporte de seguridad del fabricante. El backend\npuede exigir una versión mínima de la aplicación y bloquear versiones con vulnerabilidades conocidas.\nEST-SEG-001 · Estándar de Desarrollo Seguro\nVersión 2.1 · 2026-03-10\nPágina 11 de 13"
+  "texto": "Se define una versión mínima de sistema operativo con soporte de seguridad del fabricante. El backend\npuede exigir una versión mínima de la aplicación y bloquear versiones con vulnerabilidades conocidas."
  },
  {
   "id": "SEG-MOV-008",
@@ -2455,7 +2455,7 @@
   "fecha": "2026-02-02",
   "seccion": "4.2",
   "pagina": 3,
-  "texto": "Desarrollos nuevos: .NET 8 LTS o una versión LTS posterior con soporte vigente, Angular en una versión\ncon soporte activo (18 o superior) y SQL Server 2019 o 2022. Está prohibido iniciar desarrollos nuevos en\n.NET Framework. Los sistemas existentes deben migrar a una versión con soporte antes de que termine\nel soporte de la versión que usan.\nEST-WEB-001 · Estándar de Desarrollo de Aplicaciones Web\nVersión 3.0 · 2026-02-02\nPágina 3 de 11"
+  "texto": "Desarrollos nuevos: .NET 8 LTS o una versión LTS posterior con soporte vigente, Angular en una versión\ncon soporte activo (18 o superior) y SQL Server 2019 o 2022. Está prohibido iniciar desarrollos nuevos en\n.NET Framework. Los sistemas existentes deben migrar a una versión con soporte antes de que termine\nel soporte de la versión que usan."
  },
  {
   "id": "WEB-ARQ-003",
@@ -2519,7 +2519,7 @@
   "fecha": "2026-02-02",
   "seccion": "5.2",
   "pagina": 4,
-  "texto": "Toda operación de entrada/salida (base de datos, HTTP, archivos) es asíncrona y se espera con await.\nEstá prohibido bloquear con .Result, .Wait() o GetAwaiter().GetResult() y declarar métodos async\nvoid (salvo manejadores de eventos). Los métodos públicos asíncronos reciben y propagan un\nCancellationToken.\nEjemplo incorrecto\npublic ClienteDto Obtener(int id)\n{\nvar cliente = _contexto.Clientes.FindAsync(id).Result;\nreturn _mapper.Map<ClienteDto>(cliente);\n}\nEST-WEB-001 · Estándar de Desarrollo de Aplicaciones Web\nVersión 3.0 · 2026-02-02\nPágina 4 de 11\nEjemplo correcto\npublic async Task<ClienteDto?> ObtenerAsync(int id, CancellationToken ct)\n{\nvar cliente = await _contexto.Clientes.FindAsync([id], ct);\nreturn cliente is null ? null : _mapper.Map<ClienteDto>(cliente);\n}"
+  "texto": "Toda operación de entrada/salida (base de datos, HTTP, archivos) es asíncrona y se espera con await.\nEstá prohibido bloquear con .Result, .Wait() o GetAwaiter().GetResult() y declarar métodos async\nvoid (salvo manejadores de eventos). Los métodos públicos asíncronos reciben y propagan un\nCancellationToken.\nEjemplo incorrecto\npublic ClienteDto Obtener(int id)\n{\nvar cliente = _contexto.Clientes.FindAsync(id).Result;\nreturn _mapper.Map<ClienteDto>(cliente);\n}\nEjemplo correcto\npublic async Task<ClienteDto?> ObtenerAsync(int id, CancellationToken ct)\n{\nvar cliente = await _contexto.Clientes.FindAsync([id], ct);\nreturn cliente is null ? null : _mapper.Map<ClienteDto>(cliente);\n}"
  },
  {
   "id": "WEB-NET-003",
@@ -2587,7 +2587,7 @@
   "fecha": "2026-02-02",
   "seccion": "5.6",
   "pagina": 5,
-  "texto": "Los proyectos tienen habilitados <Nullable>enable</Nullable>,\n<AnalysisLevel>latest-recommended</AnalysisLevel> y\n<TreatWarningsAsErrors>true</TreatWarningsAsErrors> en la configuración Release. Las\nsupresiones de advertencias se justifican con un comentario en el código.\nEST-WEB-001 · Estándar de Desarrollo de Aplicaciones Web\nVersión 3.0 · 2026-02-02\nPágina 5 de 11"
+  "texto": "Los proyectos tienen habilitados <Nullable>enable</Nullable>,\n<AnalysisLevel>latest-recommended</AnalysisLevel> y\n<TreatWarningsAsErrors>true</TreatWarningsAsErrors> en la configuración Release. Las\nsupresiones de advertencias se justifican con un comentario en el código."
  },
  {
   "id": "WEB-NET-007",
@@ -2663,7 +2663,7 @@
   "fecha": "2026-02-02",
   "seccion": "6.4",
   "pagina": 6,
-  "texto": "Los componentes no inyectan HttpClient: las llamadas HTTP se encapsulan en servicios de cada\nfuncionalidad. Las suscripciones se manejan con el pipe async o con takeUntilDestroyed(); está\nprohibido dejar suscripciones manuales sin liberar.\nEST-WEB-001 · Estándar de Desarrollo de Aplicaciones Web\nVersión 3.0 · 2026-02-02\nPágina 6 de 11\nEjemplo incorrecto\nexport class ClienteListaComponent implements OnInit {\nconstructor(private http: HttpClient) {}\nngOnInit() { this.http.get<Cliente[]>('/api/v1/clientes').subscribe(c => this.clientes = c); }\n}\nEjemplo correcto\nexport class ClienteListaComponent {\nprivate readonly clienteService = inject(ClienteService);\nreadonly clientes$ = this.clienteService.listar();   // plantilla: clientes$ | async\n}"
+  "texto": "Los componentes no inyectan HttpClient: las llamadas HTTP se encapsulan en servicios de cada\nfuncionalidad. Las suscripciones se manejan con el pipe async o con takeUntilDestroyed(); está\nprohibido dejar suscripciones manuales sin liberar.\nEjemplo incorrecto\nexport class ClienteListaComponent implements OnInit {\nconstructor(private http: HttpClient) {}\nngOnInit() { this.http.get<Cliente[]>('/api/v1/clientes').subscribe(c => this.clientes = c); }\n}\nEjemplo correcto\nexport class ClienteListaComponent {\nprivate readonly clienteService = inject(ClienteService);\nreadonly clientes$ = this.clienteService.listar();   // plantilla: clientes$ | async\n}"
  },
  {
   "id": "WEB-ANG-005",
@@ -2746,7 +2746,7 @@
   "fecha": "2026-02-02",
   "seccion": "7.1",
   "pagina": 7,
-  "texto": "Los objetos se agrupan en esquemas por módulo de negocio en minúsculas (ventas, seguridad,\nmaestro, auditoria). Está prohibido crear objetos nuevos en el esquema dbo.\nEST-WEB-001 · Estándar de Desarrollo de Aplicaciones Web\nVersión 3.0 · 2026-02-02\nPágina 7 de 11"
+  "texto": "Los objetos se agrupan en esquemas por módulo de negocio en minúsculas (ventas, seguridad,\nmaestro, auditoria). Está prohibido crear objetos nuevos en el esquema dbo."
  },
  {
   "id": "WEB-BD-002",
@@ -2814,7 +2814,7 @@
   "fecha": "2026-02-02",
   "seccion": "7.5",
   "pagina": 8,
-  "texto": "Procedimientos almacenados: usp_<Entidad>_<Accion> (ventas.usp_Cliente_Listar,\nventas.usp_Pedido_Registrar). Vistas: vw_<Nombre>. Funciones: fn_<Nombre>. Disparadores:\ntr_<Tabla>_<Evento>. Está prohibido el prefijo sp_, reservado para procedimientos del sistema (SQL\nServer los busca primero en la base master).\nEST-WEB-001 · Estándar de Desarrollo de Aplicaciones Web\nVersión 3.0 · 2026-02-02\nPágina 8 de 11"
+  "texto": "Procedimientos almacenados: usp_<Entidad>_<Accion> (ventas.usp_Cliente_Listar,\nventas.usp_Pedido_Registrar). Vistas: vw_<Nombre>. Funciones: fn_<Nombre>. Disparadores:\ntr_<Tabla>_<Evento>. Está prohibido el prefijo sp_, reservado para procedimientos del sistema (SQL\nServer los busca primero en la base master)."
  },
  {
   "id": "WEB-BD-006",
@@ -2882,7 +2882,7 @@
   "fecha": "2026-02-02",
   "seccion": "8.2",
   "pagina": 9,
-  "texto": "Está prohibido SELECT * en procedimientos, vistas y código de aplicación: se listan las columnas. Las\nconsultas sobre tablas grandes filtran por columnas indexadas y evitan funciones sobre columnas en el\nWHERE (por ejemplo YEAR(Fecha) = 2026), que impiden usar índices.\nEjemplo incorrecto\nSELECT * FROM ventas.Pedido WHERE YEAR(FechaCreacion) = 2026;\nEjemplo correcto\nSELECT PedidoId, ClienteId, Total, FechaCreacion\nFROM ventas.Pedido\nWHERE FechaCreacion >= '2026-01-01' AND FechaCreacion < '2027-01-01';\nEST-WEB-001 · Estándar de Desarrollo de Aplicaciones Web\nVersión 3.0 · 2026-02-02\nPágina 9 de 11"
+  "texto": "Está prohibido SELECT * en procedimientos, vistas y código de aplicación: se listan las columnas. Las\nconsultas sobre tablas grandes filtran por columnas indexadas y evitan funciones sobre columnas en el\nWHERE (por ejemplo YEAR(Fecha) = 2026), que impiden usar índices.\nEjemplo incorrecto\nSELECT * FROM ventas.Pedido WHERE YEAR(FechaCreacion) = 2026;\nEjemplo correcto\nSELECT PedidoId, ClienteId, Total, FechaCreacion\nFROM ventas.Pedido\nWHERE FechaCreacion >= '2026-01-01' AND FechaCreacion < '2027-01-01';"
  },
  {
   "id": "WEB-BD-010",
@@ -2986,6 +2986,495 @@
   "fecha": "2026-02-02",
   "seccion": "9.3",
   "pagina": 10,
-  "texto": "Todo pull request requiere la aprobación de al menos un revisor distinto del autor y un pipeline exitoso:\ncompilación, pruebas, quality gate de SonarQube sin issues nuevos de severidad Blocker o Critical,\nanálisis de dependencias y detección de secretos.\nEST-WEB-001 · Estándar de Desarrollo de Aplicaciones Web\nVersión 3.0 · 2026-02-02\nPágina 10 de 11"
+  "texto": "Todo pull request requiere la aprobación de al menos un revisor distinto del autor y un pipeline exitoso:\ncompilación, pruebas, quality gate de SonarQube sin issues nuevos de severidad Blocker o Critical,\nanálisis de dependencias y detección de secretos."
+ },
+ {
+  "id": "BPA-201-00",
+  "titulo": "Clasificación De Activos",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "2.1",
+  "pagina": 3,
+  "texto": "Las Interfaces de Programación De Aplicaciones (Api) van a variar dependiendo del sistema donde se\nnecesite aplicar. Adicional a la parte general que incluye todos los sistemas.\n• Matriz de Clasificación de Datos en Tránsito (Ley N° 29733 y Ley N° 26702):\n• Nivel 1 (Secreto Bancario / Financiero): Saldos, números de cuenta, códigos CCI, movimientos de\ncuenta, saldos deudores, historial crediticio.\n• Nivel 2 (Datos Personales Sensibles): Biometría, patrones faciales, huellas dactilares, firma\ndigital, documento nacional de identidad (DNI).\n• Nivel 3 (Confidencial Corporativo): Códigos de agencias internas, identificadores de clientes de\nbase de datos (client_uuid), contratos con comercios o aliados.\n• Nivel 4 (Público): Tarifarios de comisiones, tasas de interés compensatorias/moratorias\n(TREA/TCEA), red de cajeros y agencias, simuladores públicos de préstamos.\n• Tipología de Red y Perímetros de Despliegue:\n• APIs de Perímetro Abierto (Públicas / Clientes finales): Desplegadas en DMZ, protegidas por\nCDN, WAF y Anti-DDoS.\n• APIs de Ecosistema / Finanzas Abiertas (B2B, Fintech, Alianzas): Consumidas vía túneles VPN\nIPsec dedicados o mTLS obligatorio con certificados emitidos por AC reconocidas.\n• APIs de Tráfico Este-Oeste (Microservicios internos / Core): Dentro de redes privadas\n(VNet/VPC) aisladas sin acceso directo a internet, gestionadas por mallas de servicios (Service\nMesh)."
+ },
+ {
+  "id": "BPA-202-00",
+  "titulo": "Consideración de los pilares de la seguridad y Principios de Diseño",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "2.2",
+  "pagina": 3,
+  "texto": "La seguridad de información se mantiene sobre los pilares de confidencialidad, integridad y\ndisponibilidad. En relación a ello, el uso de las interfaces contempla también estos pilares para la guía de\nacciones a realizar.\n• Autenticidad y No Repudio (Exigencia Res. SBS 504): Garantizar la identidad inequívoca del emisor\nmediante firmas digitales asimétricas en transacciones de movimiento de fondos.\n• Principio de Mínimo Privilegio (PoLP): Cuentas de servicio y consumidores restringidos a nivel de\nendpoint (POST /transferencias vs GET /transferencias/{id}) mediante asignación granular de Scopes\nOAuth 2.0.\n• Defensa en Profundidad y Confianza Cero (Zero Trust): Ningún microservicio interno asume que el\ntráfico dentro de la red corporativa es legítimo; cada llamada requiere validación de token y canal\ncifrado.\n• Diseño Orientado al Contrato (API-First / Contract-Driven): El contrato en OpenAPI Specification\n(OAS 3.1) o AsyncAPI se versiona y aprueba previo al inicio del desarrollo backend."
+ },
+ {
+  "id": "BPA-302-00",
+  "titulo": "Mitigación de Riesgos de Planificación",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.2",
+  "pagina": 5,
+  "texto": "Se tienen las siguientes tareas a ejecutar:\n• Tener Análisis de datos administrativos.\n• Identificar el nivel de importancia de cada problema.\n• Tener disponibilidad inmediata de información por parte de los usuarios expertos.\n• Elaborar los objetivos en base a la clasificación por el nivel de importancia del árbol de\nproblemas.\n• Diseño Semántico RESTful y Protocolos:\n• Estándar de nombres: URLS con sustantivos en plural (/v1/creditos, /v1/clientes/{id}/cuentas),\nuso de minúsculas y guiones medios (kebab-case).\n• Uso correcto de verbos HTTP:\n• GET: Solo lectura, sin mutación de estado, idempotente y almacenable en caché cuando\naplique.\n• POST: Creación de transacciones o recursos dependientes.\n• PUT: Actualización completa e idempotente.\n• PATCH: Actualización parcial controlada.\n• DELETE: Baja lógica obligatoria (en el sector financiero se prohíbe el borrado físico de tablas\ntransaccionales por auditoría).\n• Manejo Estándar de Errores Técnicos (RFC 7807 / RFC 9457 - Problem Details):\n• Toda API debe devolver fallos bajo un esquema estandarizado JSON\n{\n\"type\": \"https://api.institución.com/errores/saldo-insuficiente\",\n\"title\": \"Saldo insuficiente\",\n\"status\": 422,\n\"detail\": \"La cuenta origen no cuenta con fondos suficientes para\ndebitar el monto solicitado.\",\n\"instance\": \"/v1/transferencias/trn-984321\",\n\"traceId\": \"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01\"\n}\n• Prohibición absoluta de devolver códigos 200 OK acompañados de mensajes de error de negocio\nen el cuerpo.\n• Garantía de Idempotencia en Operaciones Financieras:\n• Cabecera obligatoria Idempotency-Key (UUIDv4) en todos los endpoints que generen cargos,\npagos, desembolsos o transferencias.\n• El backend debe persistir la llave de idempotencia en un almacén en memoria (ej. Redis) con\ntiempo de vida definido (TTL de 24 a 48 horas) para evitar duplicidad de cobros ante caídas\nde conexión o reintentos de red.\nExisten diversas metodologías como: nada, api first, scrum, etc. En cualquier metodología a usar se debe\nconsiderar protocolos binarios en ASN o más pesados como SOAP, técnicamente la API no convierte un\nservicio en micro-servicio. Si el servicio no tiene un buen nivel de autonomía.\nSe deben establecer tiempos ideales para realizar cada tarea señalada en el primer párrafo de la sección\n3.2., evitando demoras y favoreciendo que las actividades se ejecuten con la consistencia necesaria."
+ },
+ {
+  "id": "BPA-303-00",
+  "titulo": "Riesgos en el Desarrollo, Pruebas y Despliegue a Producción",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.3",
+  "pagina": 6,
+  "texto": "• Configuración incorrecta de API.\n• Explotación de mecanismos de autenticación modernos.\n• Evolución de los ataques de malware tradicionales para utilizar más API en la nube.\n• Posible uso indebido de las API para lanzar ataques a datos empresariales.\n• El uso del api para infraestructura definida por software también significa un posible uso indebido\n• Fuga de Secretos en Control de Versiones: Prohibición estricta de cadenas de conexión, API keys o\ncertificados en código. Uso mandatorio de pre-commit hooks (TruffleHog, Gitleaks) para escanear\nrepositorios.\n• Ataques a la Cadena de Suministro (Supply Chain):\n• Uso de registros de artefactos privados con escaneo de vulnerabilidades.\n• Degradación por Dependencias en Cascada: Mitigación mediante límites de concurrencia y pools de\nconexiones dimensionados frente al Core Bancario."
+ },
+ {
+  "id": "BPA-305-01",
+  "titulo": "Autorización de nivel de objeto roto",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [
+   "API1:2019"
+  ],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.1",
+  "pagina": 7,
+  "texto": "Los objetos de API que no están protegidos con el nivel adecuado de autorización pueden ser\nvulnerables a fugas de datos y manipulación de datos no autorizada a través de identificadores de\nacceso de objetos débiles. Por ejemplo, un atacante podría explotar un identificador de objeto entero,\nque se puede iterar.\nMás información sobre esta amenaza ver el Anexo 01 y en el siguiente enlace: API1:2019 Autenticación\nde nivel de objeto roto\nActividades para la mitigación:\n• El mejor lugar para implementar la autorización a nivel de objeto es dentro de la propia API de\nbackend. En el backend, las decisiones de autorización correctas se pueden tomar a nivel de\nsolicitud (u objeto), cuando corresponda, utilizando la lógica aplicable al dominio y la API. Considere\nescenarios en los que una solicitud determinada puede generar diferentes niveles de detalle en la\nrespuesta, según los permisos y la autorización del solicitante.\n• Si una API vulnerable actual no se puede cambiar en el back-end, la gestión de API podría usarse\ncomo respaldo.\n• Use una política personalizada para implementar la autorización a nivel de objeto, si no está\nimplementada en el backend.\n• Implemente una política personalizada para asignar identificadores de la solicitud al backend y del\nbackend al cliente, de modo que los identificadores internos no queden expuestos.\n• En estos casos, la política personalizada podría ser una expresión de política con una búsqueda (por\nejemplo, un diccionario) o integración con otro servicio a través de la política de envío de\nsolicitudes.\n• Para escenarios de GraphQL, aplique la autorización a nivel de objeto a través de la política de\nsolicitud de validación de GraphQL, utilizando el authorize element."
+ },
+ {
+  "id": "BPA-305-02",
+  "titulo": "Autenticación de usuario roto",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [
+   "API2:2019"
+  ],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.2",
+  "pagina": 8,
+  "texto": "Un buen diseño de interfaz API es engañosamente desafiante. A menudo, particularmente con las API\nheredadas que han evolucionado con el tiempo, las interfaces de solicitud y respuesta contienen más\ncampos de datos de los que requieren las aplicaciones de consumo.\nUn mal actor podría intentar acceder a la API directamente (quizás reproduciendo una solicitud válida) o\nrastrear el tráfico entre el servidor y la API. El análisis de las acciones de la API y los datos disponibles\npodrían generar datos confidenciales para el atacante, que la aplicación front-end no revela ni utiliza.\nMás información sobre esta amenaza: API2:2019 Autenticación de usuario roto.\nActividades para la mitigación:\n• Autenticación: API Management admite los siguientes métodos de autenticación:\n• Política de autenticación básica: credenciales de nombre de usuario y contraseña.\n• Clave de suscripción: una clave de suscripción proporciona un nivel de seguridad similar al de la\nautenticación básica y puede no ser suficiente por sí sola. Si la clave de suscripción se ve\ncomprometida, un atacante puede obtener acceso ilimitado al sistema.\n• Política de certificados de clientes: el uso de certificados de clientes es más seguro que las\ncredenciales básicas o la clave de suscripción, pero no permite la flexibilidad que brindan los\nprotocolos de autorización basados en tokens, como OAuth 2.0.\n• Autorización: API Management admite una política de validación de JWT para verificar la validez de\nun token de acceso de OAuth 2.0 JWT entrante en función de la información obtenida del extremo\nde metadatos del proveedor de identidad de OAuth. Configure la política para verificar los reclamos\nde token relevantes, la audiencia y el tiempo de vencimiento. Obtenga más información sobre cómo\nproteger una API mediante la autorización OAuth 2.0 y Azure Active Directory.\n• Utilice políticas de restricción de acceso en API Management para aumentar la seguridad. Por\nejemplo, la limitación de la tasa de llamadas ralentiza a los malhechores que utilizan ataques de\nfuerza bruta para comprometer las credenciales.\n• Las API deben usar TLS/SSL (seguridad de transporte) para proteger las credenciales o tokens. Las\ncredenciales y los tokens deben enviarse en encabezados de solicitud y no como parámetros de\nconsulta.\n• En el portal para desarrolladores de API Management, configure Azure Active Directory o Azure\nActive Directory B2C como proveedor de\nidentidad para aumentar la seguridad de la cuenta. El portal para desarrolladores usa CAPTCHA para\nmitigar los ataques de fuerza bruta."
+ },
+ {
+  "id": "BPA-305-03",
+  "titulo": "Exposición excesiva de datos",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [
+   "API3:2019"
+  ],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.3",
+  "pagina": 9,
+  "texto": "Un buen diseño de interfaz API es engañosamente desafiante. A menudo, particularmente con las API\nheredadas que han evolucionado con el tiempo, las interfaces de solicitud y respuesta contienen más\ncampos de datos de los que requieren las aplicaciones de consumo.\nUn mal actor podría intentar acceder a la API directamente (quizás reproduciendo una solicitud válida) o\nrastrear el tráfico entre el servidor y la API. El análisis de las acciones de la API y los datos disponibles\npodrían generar datos confidenciales para el atacante, que la aplicación front-end no revela ni utiliza.\nMás información sobre esta amenaza en el Anexo 01 y en el siguiente enlace: API3:2019 Exposición\nexcesiva de datos\nActividades para la mitigación:\n• El mejor enfoque para mitigar esta vulnerabilidad es garantizar que las interfaces externas definidas\nen la API de back-end se diseñen cuidadosamente e, idealmente, independientemente de la\npersistencia de los datos. Deben contener solo los campos requeridos por los consumidores de la\nAPI. Las API deben revisarse con frecuencia y los campos heredados deben quedar obsoletos y luego\neliminarse.\nEn Gestión de API, utilice:\n• Revisiones para controlar con gracia los cambios no importantes, por ejemplo, la adición de un\ncampo a una interfaz. Puede usar revisiones junto con una implementación de control de\nversiones en el back-end.\n• Versiones para romper cambios, por ejemplo, la eliminación de un campo de una interfaz.\n• Si no es posible modificar el diseño de la interfaz de back-end y el exceso de datos es un problema,\nuse las políticas de transformación de API Management para reescribir las cargas útiles de respuesta\ny enmascarar o filtrar datos. Por ejemplo, elimine las propiedades JSON innecesarias de un cuerpo\nde respuesta.\n• La validación de contenido de respuesta en API Management se puede usar con un esquema XML o\nJSON para bloquear respuestas con propiedades no documentadas o valores incorrectos. La política\ntambién admite el bloqueo de respuestas que excedan un tamaño específico.\n• Utilice la política de código de estado de validación para bloquear respuestas con errores no\ndefinidos en el esquema de la API.\n• Utilice la política de validación de encabezados para bloquear respuestas con encabezados que no\nestén definidos en el esquema o que no cumplan con su definición en el esquema. Elimine los\nencabezados no deseados con la política de encabezados establecidos.\n• Para escenarios de GraphQL, use la política de solicitud de validación de GraphQL para validar las\nsolicitudes de GraphQL, autorizar el acceso a rutas de consulta específicas y limitar el tamaño de la\nrespuesta.\n• Prohibición absoluta del retorno directo de entidades de persistencia (ORM, Data Tables).\n• Uso mandatorio de Data Transfer Objects (DTO) de salida con listas blancas explícitas de atributos."
+ },
+ {
+  "id": "BPA-305-04",
+  "titulo": "Falta de recursos y limitación de tasas",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [
+   "API4:2019"
+  ],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.4",
+  "pagina": 10,
+  "texto": "La falta de limitación de velocidad puede provocar la filtración de datos o ataques DDoS exitosos en los\nservicios de back-end, lo que provoca una interrupción para todos los consumidores.\nMás información sobre esta amenaza en el Anexo 01 y en el siguiente enlace: API4:2019 Falta de\nrecursos y limitación de velocidad.\nActividades para la mitigación:\n• Utilice políticas de límite de tasa (corto plazo) y límite de cuota (largo plazo) para controlar la\ncantidad permitida de llamadas a la API o el ancho de banda por consumidor.\n• Defina definiciones estrictas de objetos de solicitud y sus propiedades en la definición de OpenAPI.\nPor ejemplo, defina el valor máximo para paginar enteros, maxLength y expresión regular (regex)\npara cadenas. Aplique esos esquemas con las políticas de validación de contenido y validación de\nparámetros en API Management.\n• Aplique el tamaño máximo de la solicitud con la política de validación de contenido.\n• Optimice el rendimiento con el almacenamiento en caché incorporado, lo que reduce el consumo de\nCPU, memoria y recursos de red para ciertas operaciones.\n• Hacer cumplir la autenticación para las llamadas a la API (consulte Autenticación de usuario rota).\nRevocar el acceso a usuarios abusivos. Por ejemplo, desactive la clave de suscripción, bloquee la\ndirección IP con la política de restricción de IP de llamadas o rechace las solicitudes para un reclamo\nde usuario determinado de un token JWT.\n• Aplique una política de CORS para controlar los sitios web que pueden cargar los recursos servidos a\ntravés de la API. Para evitar configuraciones demasiado permisivas, no use valores comodines (*) en\nla política de CORS.\n• Minimice el tiempo que tarda un servicio back-end en responder. Cuanto más tarde el servicio back-\nend en responder, más tiempo estará ocupada la conexión en API Management, lo que reduce la\ncantidad de solicitudes que se pueden atender en un período de tiempo determinado.\n• Definir timeout en la política de solicitud de reenvío.\n• Use la política de solicitud de validación de GraphQL para las API de GraphQL y configure max-\ndepth y configure max-size de los parámetros.\n• Limite la cantidad de conexiones back-end paralelas con la política de límite de simultaneidad.\n• Si bien API Management puede proteger los servicios de back-end de los ataques DDoS, puede ser\nvulnerable a esos ataques. Implemente un servicio de protección contra bots frente a API\nManagement (por ejemplo, Azure Application Gateway, Azure Front Door o Azure DDoS Protection)\npara protegerse mejor contra los ataques DDoS. Cuando use un WAF con Azure Application Gateway\no Azure Front Door, considere usar Microsoft_BotManagerRuleSet_1.0.\n• Estrategia de paginación obligatoria por cursor o por rango: limit y offset (con un max_limit forzado\nen backend, ej. 50 registros por página).\n• Límites de carga de solicitud (Request payload limits): Restricción de tamaño máximo del cuerpo\nHTTP a nivel de Gateway (ej. máximo 2 MB para JSON, 10 MB para documentos en base64)."
+ },
+ {
+  "id": "BPA-305-05",
+  "titulo": "Autorización de nivel de función rota",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [
+   "API5:2019"
+  ],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.5",
+  "pagina": 11,
+  "texto": "Las políticas de control de acceso complejas con diferentes jerarquías, grupos y roles, y una separación\npoco clara entre las funciones administrativas y regulares conducen a fallas de autorización. Al explotar\nestos problemas, los atacantes obtienen acceso a los recursos o funciones administrativas de otros\nusuarios.\nMás información sobre esta amenaza en el Anexo 01 y en el siguiente enlace: API5:2019 Autorización de\nnivel de función rota\nActividades para la mitigación:\n• De forma predeterminada, proteja todos los puntos finales de API en API Management con claves de\nsuscripción.\n• Defina una política de validación de JWT y haga cumplir los reclamos de token requeridos. Si ciertas\noperaciones requieren una aplicación de reclamaciones más estricta, defina validate-jwt políticas\nadicionales solo para esas operaciones.\n• Use una red virtual de Azure o Private Link para ocultar los puntos finales de la API de Internet.\nObtenga más información sobre las opciones de red virtual con API Management.\n• No defina operaciones de API comodín (es decir, API \"catch-all\" con * la ruta). Asegúrese de que API\nManagement solo atienda solicitudes para puntos finales definidos explícitamente y que se\nrechacen las solicitudes para puntos finales no definidos.\n• No me publiques API con productos abiertos que no requieran una suscripción."
+ },
+ {
+  "id": "BPA-305-06",
+  "titulo": "Asignación masiva",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [
+   "API6:2019"
+  ],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.6",
+  "pagina": 12,
+  "texto": "Si una API ofrece más campos de los que requiere el cliente para una acción determinada, un atacante\npuede inyectar propiedades excesivas para realizar operaciones no autorizadas en los datos. Los\natacantes pueden descubrir propiedades no documentadas al inspeccionar el formato de las solicitudes\ny respuestas u otras API, o al adivinarlas. Esta vulnerabilidad es especialmente aplicable si no utiliza\nlenguajes de programación fuertemente tipados.\nMás información sobre esta amenaza en el Anexo 01 y en el siguiente enlace: API6:2019 Asignación\nmasiva\nActividades para la mitigación:\n• Las interfaces API externas deben desacoplarse de la implementación de datos internos. Evite\nvincular contratos de API directamente con contratos de datos en servicios de backend. Revise el\ndiseño de la API con frecuencia y desactive y elimine las propiedades heredadas mediante el control\nde versiones en API Management.\n• Defina con precisión contratos XML y JSON en el esquema de la API y utilice políticas de validación\nde contenido y parámetros para bloquear solicitudes y respuestas con propiedades no\ndocumentadas. El bloqueo de solicitudes con propiedades no documentadas mitiga los ataques,\nmientras que el bloqueo de respuestas con propiedades no documentadas dificulta la ingeniería\ninversa de posibles vectores de ataque.\n• Si la interfaz de back-end no se puede cambiar, use políticas de transformación para reescribir las\ncargas útiles de solicitud y respuesta y desacoplar los contratos de API de los contratos de back-end.\nPor ejemplo, enmascare o filtre datos o elimine propiedades JSON innecesarias."
+ },
+ {
+  "id": "BPA-305-07",
+  "titulo": "Configuración incorrecta de seguridad",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [
+   "API7:2019"
+  ],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.7",
+  "pagina": 13,
+  "texto": "Los atacantes pueden intentar explotar las vulnerabilidades de configuración incorrecta de la seguridad,\ncomo:\n• Falta refuerzo de seguridad\n• Funciones habilitadas innecesarias\n• Conexiones de red innecesariamente abiertas a Internet\n• Uso de protocolos o cifrados débiles.\n• Otras configuraciones o puntos finales que pueden permitir el acceso no autorizado al sistema.\n• Cabeceras de seguridad requeridas en cada respuesta HTTP:\n• Strict-Transport-Security: max-age=31536000; includeSubDomains; preload\n• X-Content-Type-Options: nosniff\n• X-Frame-Options: DENY\n• Content-Security-Policy: default-src 'none'\n• Cache-Control: no-store, no-cache, must-revalidate (en todos los endpoints transaccionales y de\nconsulta de saldos).\nMás información sobre esta amenaza en el Anexo 01 y en el siguiente enlace: API7:2019 Error de\nconfiguración de seguridad.\nActividades para la mitigación:\n• Configure correctamente la puerta de enlace TLS. No utilice protocolos vulnerables (por ejemplo,\nTLS 1.0, 1.1) o cifrados.\n• Configure las API para aceptar solo tráfico cifrado, por ejemplo, a través de los protocolos HTTPS o\nWSS.\n• Considere implementar API Management detrás de un extremo privado o conectado a una red\nvirtual implementada en modo interno. En las redes internas, el acceso se puede controlar desde\ndentro de la red privada (a través de un firewall o grupos de seguridad de la red) y desde Internet (a\ntravés de un proxy inverso).\n• Use las políticas de Azure API Management:\n• Herede siempre las políticas principales a través de la <base>etiqueta.\n• Cuando utilice OAuth 2.0, configure y pruebe la política de validación de JWT para verificar la\nexistencia y validez del token de JWT antes de que llegue al back-end. Verifique\nautomáticamente el tiempo de vencimiento del token, la firma del token y el emisor. Haga\ncumplir las reclamaciones, las audiencias, la caducidad del token y la firma del token a través de\nla configuración de políticas.\n• Configure la política de CORS y no use comodines * para ninguna opción de configuración. En su\nlugar, enumere explícitamente los valores permitidos.\n• Establezca políticas de validación en prevent entornos de producción para validar esquemas\nJSON y XML, encabezados, parámetros de consulta y códigos de estado, y para hacer cumplir el\ntamaño máximo de solicitud o respuesta.\n• Si API Management está fuera de los límites de la red, la validación de la IP del cliente aún es\nposible mediante la política de restricción de IP de la persona que llama. Asegúrese de que\nutilice una lista de permitidos, no una lista de bloqueados.\n• Si se utilizan certificados de cliente entre la persona que llama y API Management, utilice la\npolítica de validación de certificados de cliente. Asegúrese de que los atributos validate -\nrevocation, validate - trust, validate - not - beforey validate - not - afterestén configurados en\ntrue.\n• Los certificados de cliente (TLS mutuo) también se pueden aplicar entre API Management y el\nback-end. El back-end debería:\n• Tener credenciales de autorización configuradas.\n• Validar la cadena de certificados cuando corresponda.\n• Valide el nombre del certificado cuando corresponda.\n• Para escenarios de GraphQL, use la política de solicitud de validación de GraphQL. Asegúrese de que\nel authorization elemento y max - size los max-depth atributos estén establecidos.\n• No almacene secretos en archivos de políticas o en el control de código fuente. Utilice siempre\nvalores con nombre de API Management u obtenga los secretos en tiempo de ejecución mediante\nexpresiones de políticas personalizadas.\n• Los valores con nombre deben integrarse con Key Vault o cifrarse dentro de API Management\nmarcándolos como \"secretos\". Nunca almacene secretos en valores con nombre de texto sin\nformato.\n• Publique API a través de productos, que requieren suscripciones. No utilice productos abiertos que\nno requieran una suscripción.\n• Utilice la integración de Key Vault para administrar todos los certificados: esto centraliza la\nadministración de certificados y puede ayudar a facilitar las tareas de administración de\noperaciones, como la renovación o revocación de certificados.\n• Al usar la puerta de enlace auto hospedada, asegúrese de que haya un proceso para actualizar la\nimagen a la última versión periódicamente.\n• Representar los servicios de back-end como entidades de back-end. Configure las credenciales de\nautorización, la validación de la cadena de certificados y la validación del nombre del certificado\ncuando corresponda.\n• Al utilizar el portal para desarrolladores:\n• Si elige hospedar el portal para desarrolladores, asegúrese de que exista un proceso para\nactualizar periódicamente el portal hospedado a la última versión. Las actualizaciones de la\nversión administrada predeterminada son automáticas.\n• Use Azure Active Directory (Azure AD) o Azure Active Directory B2C para el registro e inicio de\nsesión de usuarios. Deshabilite la autenticación predeterminada de nombre de usuario y\ncontraseña, que es menos segura.\n• Asigne grupos de usuarios a los productos, para controlar la visibilidad de las API en el portal.\n• Use Azure Policy para hacer cumplir la configuración de nivel de recursos de API Management y los\npermisos de control de acceso basado en roles (RBAC) para controlar el acceso a los recursos.\nOtorgue los privilegios mínimos requeridos a cada usuario.\n• Utilice un proceso de DevOps y un enfoque de infraestructura como código fuera de un entorno de\ndesarrollo para garantizar la coherencia del contenido de API Management y los cambios de\nconfiguración y para minimizar los errores humanos.\n• No utilice ninguna característica obsoleta."
+ },
+ {
+  "id": "BPA-305-08",
+  "titulo": "Inyección",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [
+   "API8:2019"
+  ],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.8",
+  "pagina": 15,
+  "texto": "Cualquier punto final que acepte datos de usuario es potencialmente vulnerable a un exploit de\ninyección. Los ejemplos incluyen, pero no se limitan a:\n• Inyección de comandos, donde un mal actor intenta alterar la solicitud de API para ejecutar\ncomandos en el sistema operativo que aloja la API.\n• Inyección SQL, donde un mal actor intenta alterar la solicitud de API para ejecutar comandos y\nconsultas en la base de datos de la que depende una API.\nMás información sobre esta amenaza en el Anexo 01 y en el siguiente enlace: API8:2019 Inyección.\nActividades para la mitigación:\n• Las políticas modernas de firewall de aplicaciones web (WAF) cubren muchas vulnerabilidades de\ninyección comunes. Si bien API Management no tiene un componente WAF integrado, se\nrecomienda enfáticamente implementar un WAF en sentido ascendente (delante) de\nla instancia de API Management. Por ejemplo, use Azure Application Gateway o Azure Front Door.\nImportante\nAsegúrese de que un mal actor no pueda eludir la puerta de enlace que aloja el WAF y conectarse\ndirectamente a la puerta de enlace de API Management o a la propia API de back-end. Las posibles\nmitigaciones incluyen: ACL de red, uso de la política de administración de API para restringir el tráfico\nentrante por IP de cliente, eliminación del acceso público donde no sea necesario y autenticación de\ncertificado de cliente (también conocido como TLS mutuo o mTLS).\n• Use políticas de validación de esquemas y parámetros, cuando corresponda, para restringir y validar\naún más la solicitud antes de que llegue al servicio de la API de back-end.\n• El esquema proporcionado con la definición de la API debe tener una restricción de patrón de\nexpresión regular aplicada a los campos vulnerables. Cada expresión regular debe probarse para\nasegurarse de que restringe el campo lo suficiente como para mitigar los intentos de inyección\ncomunes."
+ },
+ {
+  "id": "BPA-305-09",
+  "titulo": "Gestión inadecuada de activos",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [
+   "API9:2019"
+  ],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.9",
+  "pagina": 16,
+  "texto": "Las vulnerabilidades relacionadas con la gestión inadecuada de activos incluyen:\n• Falta de documentación API adecuada o información de propiedad.\n• Cantidades excesivas de versiones anteriores de API, a las que pueden faltar soluciones de\nseguridad.\nMás información sobre esta amenaza en el Anexo 01 y en el siguiente enlace: API9:2019 Gestión\ninadecuada de activos\nActividades para la mitigación:\n• Utilice una especificación Open API bien definida como fuente para importar API REST. La\nespecificación permite la encapsulación de la definición de la API, incluidos los metadatos\nautodocumentados.\n• Utilice interfaces API con rutas precisas, esquemas de datos, encabezados, parámetros de consulta y\ncódigos de estado. Evite las operaciones con comodines. Proporcione descripciones para cada API y\noperación e incluya información de contacto y licencia.\n• Evite puntos finales que no contribuyan directamente al objetivo empresarial. Aumentan\ninnecesariamente el área de superficie de ataque y dificultan la evolución de la API.\n• Use revisiones y versiones en API Management para gobernar y controlar los puntos finales de API.\nTenga una sólida estrategia de control de versiones de back-end y comprométase con un número\nmáximo de versiones de API admitidas (por ejemplo, 2 o 3 versiones anteriores). Planee dejar de\nusar rápidamente y, en última instancia, eliminar las versiones de API más antiguas, a menudo\nmenos seguras.\n• Utilice una instancia de API Management por entorno (como desarrollo, prueba y producción).\nAsegúrese de que cada instancia de API Management se conecte a sus dependencias en el mismo\nentorno. Por ejemplo, en el entorno de prueba, el recurso de API Management de prueba debe\nconectarse a un recurso de prueba de Azure Key Vault y las versiones de prueba de los servicios de\nback-end. Utilice la automatización de DevOps y las prácticas de infraestructura como código para\nayudar a mantener la coherencia y la precisión entre los entornos y reducir los errores humanos.\n• Use etiquetas para organizar las API y los productos y agrúpelos para su publicación.\n• Publique API para su consumo a través del portal para desarrolladores integrado. Asegúrese de que\nla documentación de la API esté actualizada.\n• Descubra API no documentadas o no administradas y expóngalas a través de API Management para\nun mejor control."
+ },
+ {
+  "id": "BPA-305-10",
+  "titulo": "Registro y monitoreo insuficientes",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.10",
+  "pagina": 17,
+  "texto": "El registro y la supervisión insuficientes, junto con la integración faltante o ineficaz con la respuesta a\nincidentes, permite a los atacantes atacar aún más los sistemas, mantener la persistencia, pasar a más\nsistemas para manipularlos y extraer o destruir datos. La mayoría de los estudios de brechas\ndemuestran que el tiempo para detectar una brecha es de más de 200 días, generalmente detectado\npor partes externas en lugar de procesos internos o monitoreo.\nMás información sobre esta amenaza en el Anexo 01 y en el siguiente enlace: API10: 2019 Registro y\nmonitoreo insuficientes.\nActividades para la mitigación:\n• Comprenda las opciones de observabilidad en Azure API Management y las mejores prácticas para\nmonitorear en Azure.\n• Supervise el tráfico de la API con Azure Monitor.\n• Inicie sesión en Application Insights para fines de depuración. Correlacione transacciones en\nApplication Insights entre API Management y la API de back-end para rastrearlas de un extremo a\notro.\n• Si es necesario, reenvíe eventos personalizados a Event Hubs.\n• Establezca alertas en Azure Monitor y Application Insights, por ejemplo, para la métrica de\ncapacidad o para solicitudes excesivas o transferencia de ancho de banda.\n• Utilice la política de emisión de métricas para métricas personalizadas.\n• Use el registro de actividad de Azure para realizar un seguimiento de la actividad en el servicio.\n• Use eventos personalizados en Azure Application Insights y Azure Monitor según sea necesario.\n• Configure OpenTelemetry para puertas de enlace auto hospedadas en Kubernetes.\n• Reglas de Enmascaramiento y Sanitización (Cumplimiento SBS y PCI-DSS):\n• Dato prohibido en logs: Contraseñas, PIN, CVV/CVC, tokens completos de autorización (JWT),\nclaves privadas, respuestas de biometría.\n• Dato enmascarado: Tarjetas de débito/crédito (mostrar únicamente los primeros 6 y últimos 4\ndígitos: 411111******1111), números de cuenta/CCI (mostrar solo últimos 4 caracteres)."
+ },
+ {
+  "id": "BPA-305-11",
+  "titulo": "Falsificación de Solicitudes del Lado del Servidor (SSRF)",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.11",
+  "pagina": 18,
+  "texto": "En servicios que reciban webhooks o URLs externas. Implementar resolución DNS segura, listas blancas\nestrictas y bloqueo de rangos privados (RFC 1918) y endpoints de metadatos de nube (169.254.169.254)."
+ },
+ {
+  "id": "BPA-305-12",
+  "titulo": "Consumo Inseguro de APIs Externas",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.12",
+  "pagina": 18,
+  "texto": "Al interactuar con el buró crediticio, pasarelas de pago o entidades de consulta (ej. RENIEC). Validar\nestrictamente la respuesta antes del procesamiento interno y no reenviar los datos crudos hacia los\nclientes."
+ },
+ {
+  "id": "BPA-305-13",
+  "titulo": "Falla de Lógica de Negocio y Reglas Transaccionales",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "3.5.13",
+  "pagina": 18,
+  "texto": "Mitigación mediante máquinas de estados para evitar transacciones fuera de secuencia (ej. confirmar un\ncrédito sin haber pasado la etapa de validación de identidad)."
+ },
+ {
+  "id": "BPA-401-01",
+  "titulo": "Validación de Entradas",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.1.1",
+  "pagina": 19,
+  "texto": "Asegurar que la API valide y filtre adecuadamente todas las entradas, incluyendo parámetro de solicitud\ny encabezados, para prevenir ataques de inyección. Como SQL Injection."
+ },
+ {
+  "id": "BPA-401-02",
+  "titulo": "Autenticación y Autorizaciones Sólidas",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.1.2",
+  "pagina": 19,
+  "texto": "• Implementar una autenticación robusta y controles de autorización para garantizar que solo los\nusuarios autorizados accedan a recursos específicos. Verificar la implementación de OAuth, JWT u\notros estándares de autenticación segura.\n• Uso de OAuth 2.0 (RFC 6749) y OpenID Connect (OIDC) con perfiles de alta seguridad (FAPI -\nFinancial-grade API cuando se expongan servicios abiertos).\n• Políticas para Tokens JWT:\n• Algoritmos asimétricos permitidos exclusivamente: RS256, ES256 o PS256. Prohibición estricta\ndel algoritmo none y de algoritmos simétricos basados en secretos compartidos (HS256) en\nentornos distribuidos.\n• Tiempo de vida de Access Token acotado (máximo 15 minutos). Uso de Refresh Tokens con\nrotación obligatoria de un solo uso.\n• Validación mandatoria de claims: iss (emisor), aud (audiencia), exp (expiración) y nbf (no antes\nde).\n• mTLS (Mutual TLS): Obligatorio para todas las conexiones entre sistemas Core, redes de cajeros y\nconsumo de socios B2B."
+ },
+ {
+  "id": "BPA-401-03",
+  "titulo": "Control de Sesiones",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.1.3",
+  "pagina": 19,
+  "texto": "Implementar controles de sesión seguros y verificar que las sesiones se me manejen de manera\nadecuada para evitar problemas como secuestro de sesión."
+ },
+ {
+  "id": "BPA-401-04",
+  "titulo": "Protección contra Ataques Comunes",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.1.4",
+  "pagina": 19,
+  "texto": "Asegurar que la API esté protegida contra ataques comunes, como Cross-Site Scripting (XSS) y Cross-Site\nForgery (CSRF)"
+ },
+ {
+  "id": "BPA-401-05",
+  "titulo": "Protección de Datos Sensibles",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.1.5",
+  "pagina": 19,
+  "texto": "• Utilizar cifrado adecuado (por ejemplo, TLS) para proteger la confidencialidad de los datos\ntransmitidos y almacena datos sensibles de manera segura.\n• Protocolo mínimo obligatorio: TLS 1.2 (con suites cipher suites en modo GCM/DHE) y habilitación\npreferente de TLS 1.3. Deshabilitar soporte para TLS 1.0, TLS 1.1 y algoritmos CBC, RC4 y 3DES.\n• Cifrado en reposo para tablas de base de datos (TDE) y particiones que me almacenen información\nclasificada de Nivel 1 y 2."
+ },
+ {
+  "id": "BPA-401-06",
+  "titulo": "Registro y Auditoría",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "api"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.1.6",
+  "pagina": 20,
+  "texto": "Implementar registros de seguridad y auditorías para rastrear actividades y detectar posibles amenazas\no violaciones de seguridad."
+ },
+ {
+  "id": "BPA-402-01",
+  "titulo": "Validación de Datos Recibidos",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.2.1",
+  "pagina": 20,
+  "texto": "Validar y filtrar adecuadamente los datos recibidos de la API externa para evitar vulnerabilidades de\ninyección y otros ataques"
+ },
+ {
+  "id": "BPA-402-02",
+  "titulo": "Seguridad de Claves API",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.2.2",
+  "pagina": 20,
+  "texto": "Asegurar que las claves de API se almacenen y transmitan de manera segura (de acuerdo a la\ndocumentación que proporciona el proveedor). No se deben exponer en repositorios públicos o en el\ncódigo fuente."
+ },
+ {
+  "id": "BPA-402-03",
+  "titulo": "Control de Errores",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.2.3",
+  "pagina": 20,
+  "texto": "• Validar y gestionar adecuadamente los errores y excepciones que provienen de la API externa para\nevitar revelaciones de información sensible.\n• Patrón Circuit Breaker: Abrir el circuito cuando la tasa de fallo de una API externa supere un umbral\n(ej. 50% de errores en una ventana de 10 segundos) para no me degradar los hilos de ejecución de la\naplicación interna."
+ },
+ {
+  "id": "BPA-402-04",
+  "titulo": "Validación de Respuestas",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.2.4",
+  "pagina": 20,
+  "texto": "• Validar las respuestas de la API externa para garantizar que no contengan datos maliciosos o no\nconfiables.\n• Estrategia de Timeouts Mandatoria: Prohibir clientes HTTP sin timeout explícito:\n• Connect Timeout: Máximo 2 a 3 segundos.\n• Read/Response Timeout: Máximo 5 a 8 segundos en operaciones síncronas.\n• Reintentos Inteligentes con Retroceso Exponencial (Exponential Backoff con Jitter): Evitar\nsobrecargar los servicios en recuperación enviando avalanchas de solicitudes en el mismo\nmilisegundo."
+ },
+ {
+  "id": "BPA-402-05",
+  "titulo": "Protección contra Ataques Comunes",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.2.5",
+  "pagina": 20,
+  "texto": "Asegurar que las solicitudes a la API externa estén protegidas contra ataques comunes como CSRF y\nataques de inyección."
+ },
+ {
+  "id": "BPA-402-06",
+  "titulo": "Seguimiento y Monitorización",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.2.6",
+  "pagina": 21,
+  "texto": "Implementar un seguimiento y monitorización constante de las solicitudes y respuestas de la API\nexterna para detectar anomalías o posibles amenazas"
+ },
+ {
+  "id": "BPA-402-07",
+  "titulo": "Actualización y Parches",
+  "nivel": "Recomendado",
+  "aplica_a": [
+   "web",
+   "api",
+   "escritorio",
+   "movil"
+  ],
+  "referencias": [],
+  "documento": "EST-BPA-001",
+  "version": "1",
+  "fecha": "2026-11-04",
+  "seccion": "4.2.7",
+  "pagina": 21,
+  "texto": "Mantener actualizadas todas las bibliotecas y dependencias utilizadas para consumir la API externa, ya\nque las vulnerabilidades pueden surgir en bibliotecas de terceros."
  }
 ]

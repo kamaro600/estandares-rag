@@ -46,6 +46,27 @@ const extension = (nombre) => { const i = nombre.lastIndexOf("."); return i < 0 
 const base = (ruta) => ruta.split("/").pop();
 const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
 
+// Iconos: trazos SVG constantes de esta página (nunca texto del servidor), por eso se pueden armar como marcado.
+const ICONOS = {
+  seguridad: '<path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"/>',
+  web: '<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18M8 21h8"/>',
+  api: '<path d="m8 9-4 3 4 3M16 9l4 3-4 3M14 5l-4 14"/>',
+  escritorio: '<rect x="2" y="4" width="20" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  referencia: '<path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2.5Z"/><path d="M8 7h8M8 11h6"/>',
+  general: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>',
+  codigo: '<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+};
+function icono(k, s = 18) {
+  const t = document.createElement("template");
+  t.innerHTML = `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ` +
+    `stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS[k] || ICONOS.general}</svg>`;
+  return t.content.firstChild;
+}
+const DOCUMENTOS = { "EST-SEG-001": ["Seguridad de aplicaciones", "seguridad"], "EST-WEB-001": ["Desarrollo web", "web"],
+  "EST-API-001": ["Diseño de APIs", "api"], "EST-DSK-001": ["Aplicaciones de escritorio", "escritorio"],
+  "EST-REF-001": ["Referencias OWASP", "referencia"], "EST-BPA-001": ["Buenas prácticas de APIs", "api"] };
+
 function lenguajeDe(nombre) {
   if (nombre.toLowerCase().endsWith(".xaml.cs")) return "csharp";
   const ext = extension(nombre);
@@ -101,13 +122,22 @@ function marcarPaso(n) {
 async function cargarInfo() {
   try {
     estado.info = await api("/v1/info");
-    $("estado").replaceChildren(h("b", {}, estado.info.reglas), " reglas, modelo ", h("span", { class: "modelo" }, estado.info.modelo));
+    const [proveedor, modelo] = estado.info.modelo.split(":");
+    $("estado").textContent = `${estado.info.reglas} reglas · ${proveedor === "anthropic" ? "Claude" : proveedor === "openai" ? "OpenAI" : "simulador"}` +
+      `${modelo ? " " + modelo : ""} · embeddings ${(estado.info.embeddings || "").replace("openai:", "")}`;
+    $("docs").replaceChildren(...(estado.info.documentos || []).map((d) => h("div", { class: "doc" },
+      h("div", { class: "ic" }, icono(DOCUMENTOS[d.codigo]?.[1] || "general", 17)),
+      h("div", {}, h("b", {}, DOCUMENTOS[d.codigo]?.[0] || d.codigo),
+        h("small", {}, `${d.codigo} · `, h("span", { class: "tag" }, `v${d.version}`), ` · ${d.reglas} reglas`),
+        d.archivo ? h("small", { class: "archivo-pdf", title: d.archivo }, d.archivo) : null))));
     $("limites").textContent = `Hasta ${estado.info.max_archivos} archivos de ${kb(estado.info.max_bytes_archivo)} cada uno.`;
     $("inArchivos").setAttribute("accept", estado.info.extensiones.join(","));
     $("familias").replaceChildren(...estado.info.familias.map((f) => h("div", {},
       h("dt", {}, f.nombre, h("small", {}, f.detalle)), h("dd", {}, f.extensiones.map((e) => h("span", { class: "ext" }, e))))));
   } catch (e) {
     $("estado").textContent = "Sin conexión con la API";
+    $("ptEstado").classList.add("off");
+    $("docs").replaceChildren(h("p", { class: "ayuda" }, "No se pudo cargar la lista."));
     avisar(e);
   }
 }
@@ -499,4 +529,206 @@ $("btnRevisar").addEventListener("click", revisar);
 $("btnAplicar").addEventListener("click", aplicar);
 $("btnTodos").addEventListener("click", () => marcarTodos(true));
 $("btnNinguno").addEventListener("click", () => marcarTodos(false));
+
+// ---------------------------------------------------------------- pestañas
+function mostrarVista(cual) {
+  const chat = cual === "chat";
+  $("tabChat").setAttribute("aria-pressed", String(chat));
+  $("tabRevisar").setAttribute("aria-pressed", String(!chat));
+  $("vistaChat").hidden = !chat;
+  $("vistaRevisar").hidden = chat;
+  $("pasos").hidden = chat;
+  $("vistaCarga").hidden = Boolean(estado.revision);
+  $("vistaRevision").hidden = !estado.revision;
+  $("btnNuevaConv").hidden = !chat;
+  if (chat) $("barraAprobar").hidden = true; else actualizarBarra();
+  if (chat) $("txtChat").focus();
+}
+$("tabChat").addEventListener("click", () => mostrarVista("chat"));
+$("tabRevisar").addEventListener("click", () => mostrarVista("revisar"));
+
+// ---------------------------------------------------------------- chat
+// El texto del modelo y del usuario se inserta SIEMPRE como texto (h → textContent). El formato mínimo (bloques ```,
+// **negrita** y `código`) se arma creando nodos, nunca con innerHTML.
+const memoria = { get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch { /* sin almacenamiento */ } } };
+// ?c=ID abre una conversación concreta (el enlace que se le pasa a quien debe aprobar); si no, la de esta pestaña
+const chatEstado = { conv: Number(new URLSearchParams(location.search).get("c")) || Number(memoria.get("lab07-conv")) || null,
+  decididas: new Set(), enviando: false };
+const NOMBRE_RUTA = { consulta_estandar: "consulta", revisar_codigo: "revisión de código", fuera_de_alcance: "fuera de alcance", bloqueado: "bloqueado" };
+const ES_REGLA = /^[A-Z]{3}-[A-Z0-9]{2,4}-[A-Z0-9]{2,10}$/;
+const SUGERENCIAS = [   // [icono, título, descripción, mensaje]
+  ["web", "Nomenclatura de base de datos", "Dos estándares lo regulan distinto: ¿cuál prevalece?", "¿Cómo debo nombrar las tablas en SQL Server?"],
+  ["seguridad", "Tokens en Angular", "¿Puedo guardar el token en localStorage?", "¿Puedo guardar el token de acceso en localStorage en Angular?"],
+  ["api", "Errores en APIs", "Código HTTP cuando se incumple una regla de negocio", "¿Qué código HTTP devuelvo si no se cumple una regla de negocio?"],
+  ["codigo", "Revisar un servicio C#", "El agente lo revisa y tú apruebas cada corrección",
+   "Revisa este código:\n```csharp\n// archivo: ClienteService.cs\npublic Cliente Obtener(int id)\n{\n    var sql = \"SELECT * FROM Cliente WHERE Id = \" + id;\n    var cliente = _repo.ObtenerAsync(id).Result;\n    return cliente;\n}\n```"],
+];
+const ES_CODIGO = /```|[;{}]\s*$/m;
+const fila = (m, caja) => (m === "usuario" ? h("div", { class: "fila yo" }, caja)
+  : m === "sistema" ? caja : h("div", { class: "fila" }, h("div", { class: "avatar" }, "IA"), caja));
+
+function formatoTexto(texto) {
+  const caja = h("div", { class: "texto" });
+  texto.split(/```[\w#+.-]*\n?([\s\S]*?)```/g).forEach((trozo, i) => {
+    if (i % 2) { caja.append(h("pre", { class: "bloque" }, trozo)); return; }
+    trozo.split(/(\*\*[^*\n]+\*\*|`[^`\n]+`)/g).forEach((p) => {
+      if (/^\*\*[^*]+\*\*$/.test(p)) caja.append(h("b", {}, p.slice(2, -2)));
+      else if (/^`[^`]+`$/.test(p)) caja.append(h("code", {}, p.slice(1, -1)));
+      else if (p) caja.append(p);
+    });
+  });
+  return caja;
+}
+
+function metaChat(meta) {
+  const r = meta.router || {}, partes = [];
+  if (meta.ruta) partes.push(chip(`${NOMBRE_RUTA[meta.ruta] || meta.ruta}${r.confianza ? " · " + Number(r.confianza).toFixed(2) : ""}`));
+  if (r.respaldo) partes.push(chip(`respaldo: ${r.respaldo}`, "adv"));
+  if (meta.abstencion) partes.push(chip("sin evidencia: no se llamó al modelo", "adv"));
+  if (meta.sin_citas_validas) partes.push(chip("sin citas verificables", "bloq"));
+  if (meta.sin_respaldo && meta.sin_respaldo.length) partes.push(chip(`nombra sin respaldo: ${meta.sin_respaldo.join(", ")}`, "bloq"));
+  if (meta.inyeccion && meta.inyeccion.length) partes.push(chip("posible prompt injection", "bloq"));
+  if (meta.llm_error) partes.push(chip("el modelo no respondió", "bloq"));
+  if (meta.trace_id) partes.push(h("a", { href: `/v1/trazas/${encodeURIComponent(meta.trace_id)}`, target: "_blank", rel: "noopener" }, "ver traza"));
+  return partes.length ? h("div", { class: "meta" }, partes) : null;
+}
+
+function fuentes(citas) {
+  if (!citas || !citas.length) return null;
+  return h("details", {}, h("summary", {}, `${plural(citas.length, "regla citada", "reglas citadas")}`),
+    citas.map((c) => h("div", { class: "fuente" },
+      h("div", { class: "etiquetas" }, ES_REGLA.test(c.id) ? enlaceRegla(c.id) : h("b", {}, c.titulo),
+        chip(c.nivel, c.nivel === "Recomendado" ? "adv" : c.nivel === "Informativo" ? "" : "bloq"), h("span", { class: "tenue" }, c.cita)),
+      h("p", {}, c.texto))));
+}
+
+function tarjetaRevision(rev) {
+  const decidida = chatEstado.decididas.has(rev.revision_id);
+  const marcados = new Set();
+  const lista = rev.hallazgos.map((x) => h("article", { class: "hallazgo" },
+    h("span", { class: "linea" }, `L${x.linea}`),
+    h("div", { class: "que" },
+      h("div", { class: "etiquetas" }, enlaceRegla(x.regla_id), h("span", { class: "titulo-regla" }, x.titulo_regla)),
+      h("p", { class: "msg" }, x.mensaje),
+      h("div", { class: "etiquetas" }, chip(x.severidad, x.severidad === "bloqueante" ? "bloq" : "adv"),
+        x.confianza === "media" ? chip("confianza media: confirmar", "media") : null,
+        rev.revision_manual[x.id] ? chip("revisión humana", "adv") : null))));
+  const parches = rev.parches.map((p) => {
+    const caja = h("input", { type: "checkbox", disabled: decidida, onchange: (ev) => {
+      ev.target.checked ? marcados.add(p.id) : marcados.delete(p.id);
+      tarjeta.classList.toggle("aprobado", ev.target.checked); boton.textContent = textoBoton(); } });
+    const tarjeta = h("article", { class: `parche ${decidida ? "cerrado" : ""}` },
+      h("div", { class: "parche-cab" }, h("label", { class: "aprobar" }, caja, `Aprobar ${p.id}`), enlaceRegla(p.regla_id),
+        chip(p.origen === "llm" ? "la propuso el modelo" : "corrección mecánica", p.origen === "llm" ? "modelo" : "cian"),
+        h("span", { class: "tenue" }, p.linea_inicio === p.linea_fin ? `línea ${p.linea_inicio}` : `líneas ${p.linea_inicio} a ${p.linea_fin}`)),
+      h("pre", {}, p.reemplazo), h("p", { class: "justif" }, p.justificacion));
+    return tarjeta;
+  });
+  const textoBoton = () => (marcados.size ? `Aplicar ${plural(marcados.size, "aprobada", "aprobadas")}` : "Denegar todas y cerrar");
+  const boton = h("button", { type: "button", class: "btn primario chico", disabled: decidida, onclick: async () => {
+    boton.disabled = true;
+    try {
+      const d = await api(`/v1/revisiones/${rev.revision_id}/aprobacion`,
+        { aprobados: [...marcados].map((parche) => ({ archivo: rev.archivo, parche })) });
+      chatEstado.decididas.add(rev.revision_id);
+      if (d.mensaje_chat) pintarMensaje(d.mensaje_chat);
+      for (const c of d.corregidos) {
+        pintarMensaje({ rol: "sistema", texto: `Archivo corregido listo: ${c.archivo}`, meta: { descarga: c } });
+      }
+    } catch (e) { boton.disabled = false; avisar(e); }
+  } }, textoBoton());
+  return h("div", { class: "rev" },
+    h("div", { class: "etiquetas" }, chip(VEREDICTO[rev.veredicto][0], rev.veredicto === "NO_APTO" ? "bloq" : rev.veredicto === "APTO" ? "ok" : "adv"),
+      chip(ETIQUETA_LENG[rev.lenguaje] || rev.lenguaje), chip(`evaluado como ${rev.evaluado_como}`),
+      decidida ? chip("decisión registrada", "ok") : rev.parches.length ? chip("pendiente de tu aprobación", "adv") : null),
+    lista.length ? h("div", { class: "hallazgos" }, lista) : h("p", { class: "tenue" }, "Sin hallazgos de los detectores."),
+    rev.resumen_especialista ? h("p", { class: "tenue" }, h("b", {}, "Especialista: "), rev.resumen_especialista) : null,
+    parches.length ? [h("h3", {}, "Correcciones propuestas (ya validadas por la guarda)"), ...parches,
+      h("div", { class: "botones-izq" }, boton, h("span", { class: "tenue" }, "Las no marcadas quedan denegadas. Cada revisión se decide una vez."))] : null);
+}
+
+function pintarMensaje(m) {
+  $("conversacion").querySelector(".hero")?.remove();
+  const meta = m.meta || {};
+  let caja;
+  if (m.rol === "usuario") {
+    caja = h("div", { class: `burbuja usuario ${ES_CODIGO.test(m.texto) ? "codigo" : ""}` }, m.texto);
+  } else if (m.rol === "sistema") {
+    caja = h("div", { class: "burbuja sistema" }, icono("info", 16), h("span", {}, m.texto),
+      meta.descarga ? h("div", { class: "botones-izq" },
+        h("button", { type: "button", class: "btn chico", onclick: () => descargar(base(meta.descarga.archivo), meta.descarga.contenido) }, "Descargar archivo"),
+        h("button", { type: "button", class: "btn fantasma chico", onclick: () => descargar("cambios.diff", meta.descarga.diff) }, "Descargar diff")) : null);
+  } else {
+    caja = h("div", { class: "burbuja asistente" }, formatoTexto(m.texto), fuentes(meta.citas),
+      meta.revision ? tarjetaRevision(meta.revision) : null, metaChat(meta));
+  }
+  $("conversacion").append(fila(m.rol, caja));
+  $("scroll").scrollTop = $("scroll").scrollHeight;
+}
+
+function chatVacio() {
+  $("conversacion").replaceChildren(h("div", { class: "hero" },
+    h("div", { class: "ic" }, icono("seguridad", 30)),
+    h("h2", {}, "¿En qué estándar te ayudo hoy?"),
+    h("p", {}, "Respondo con la regla exacta, su documento y su página; si no está en los estándares, lo digo. " +
+      "Si pegas código, el agente lo revisa y tú apruebas cada corrección."),
+    h("div", { class: "sugerencias" }, SUGERENCIAS.map(([ic, titulo, nota, texto]) => h("button", { type: "button", class: "sug",
+      onclick: () => { $("txtChat").value = texto; ajustarTexto(); $("txtChat").focus(); } },
+      h("div", { class: "ic" }, icono(ic)), h("div", {}, h("b", {}, titulo), h("span", {}, nota)))))));
+}
+
+function ajustarTexto() {
+  const t = $("txtChat");
+  t.style.height = "auto";
+  t.style.height = Math.min(t.scrollHeight, innerHeight * 0.4) + "px";
+}
+
+async function cargarConversacion() {
+  if (!chatEstado.conv) { chatVacio(); return; }
+  try {
+    const d = await api(`/v1/chat/${chatEstado.conv}`);
+    // una revisión ya decidida se muestra cerrada (su decisión llegó como mensaje del sistema)
+    d.mensajes.forEach((m) => { if (m.meta && m.meta.tipo === "aprobacion") chatEstado.decididas.add(m.meta.revision_id); });
+    $("conversacion").replaceChildren();
+    d.mensajes.length ? d.mensajes.forEach(pintarMensaje) : chatVacio();
+  } catch { chatEstado.conv = null; memoria.set("lab07-conv", null); chatVacio(); }
+}
+
+async function enviarChat(ev) {
+  ev?.preventDefault();
+  const texto = $("txtChat").value.trim();
+  if (!texto || chatEstado.enviando) return;
+  chatEstado.enviando = true; $("btnEnviar").disabled = true; $("txtChat").value = ""; ajustarTexto();
+  $("conversacion").querySelector(".hero")?.remove();
+  const espera = fila("asistente", h("div", { class: "burbuja asistente escribiendo" },
+    h("span", { class: "puntos", "aria-hidden": "true" }, h("i"), h("i"), h("i")),
+    ES_CODIGO.test(texto) ? "El agente está revisando el código…" : "Buscando en los estándares…"));
+  $("conversacion").append(espera);
+  $("scroll").scrollTop = $("scroll").scrollHeight;
+  try {
+    const d = await api("/v1/chat", { conversacion_id: chatEstado.conv, mensaje: texto,
+      tipo_app: $("chatTipo").value, modo_bd: $("chatBd").value });
+    espera.remove();
+    chatEstado.conv = d.conversacion_id; memoria.set("lab07-conv", String(d.conversacion_id));
+    d.mensajes.forEach(pintarMensaje);
+  } catch (e) {
+    espera.remove(); $("txtChat").value = texto; ajustarTexto(); avisar(e);
+  } finally {
+    chatEstado.enviando = false; $("btnEnviar").disabled = false; $("txtChat").focus();
+  }
+}
+
+$("formChat").addEventListener("submit", enviarChat);
+$("txtChat").addEventListener("keydown", (ev) => { if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)) enviarChat(ev); });
+$("txtChat").addEventListener("input", ajustarTexto);
+$("btnNuevaConv").addEventListener("click", () => {
+  chatEstado.conv = null; memoria.set("lab07-conv", null); history.replaceState(null, "", location.pathname);
+  chatVacio(); $("lateral").classList.remove("abierto"); $("txtChat").focus();
+});
+$("btnMenu").addEventListener("click", () => $("lateral").classList.toggle("abierto"));
+document.addEventListener("click", (ev) => {
+  if (innerWidth <= 900 && !ev.target.closest("#lateral") && !ev.target.closest("#btnMenu")) $("lateral").classList.remove("abierto");
+});
 cargarInfo();
+cargarConversacion();
